@@ -1,6 +1,8 @@
 # Family Bible Study
 
-A local, offline-friendly app with two studies:
+**Live site:** https://solomonpadilla-sketch.github.io/family-bible-study/
+
+An app with two studies:
 
 - **☀️ Morning Study** — a daily family devotional: theme, key verse, discussion questions, scripture readings (a New Testament chapter, the Psalm of the day, and the Proverbs chapter matching the date), and a morning prayer. 60 devotionals rotate through the year, and the readings are unique every day.
 - **💑 Couples Study** — one marriage-focused study per week, 52 in all (a full year): a passage to read together, five discussion questions, a practical "this week's practice," and a prayer.
