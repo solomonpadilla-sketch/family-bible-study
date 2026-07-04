@@ -229,6 +229,58 @@
     font-style: italic;
     margin-top: 8px;
   }
+  .quiz-q { margin: 18px 0 10px; font-weight: bold; }
+  .quiz-q .qnum {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    font-size: 0.85rem;
+    margin-right: 8px;
+    font-weight: normal;
+  }
+  .opts { display: flex; flex-direction: column; gap: 8px; margin-left: 32px; }
+  .opt {
+    font-family: inherit;
+    font-size: 1rem;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--cream);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .opt:hover { border-color: var(--gold); }
+  .opt.correct { background: #e5f0e0; border-color: var(--green); color: var(--green-dark); }
+  .opt.wrong { background: #f6e3e3; border-color: var(--burgundy); color: var(--burgundy); }
+  .opt:disabled { cursor: default; opacity: 0.85; }
+  .opt.correct:disabled, .opt.wrong:disabled { opacity: 1; }
+  .score-banner {
+    text-align: center;
+    background: var(--gold-light);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px;
+    margin: 20px 0 6px;
+    font-size: 1.1rem;
+  }
+  .score-banner .stars { font-size: 1.5rem; letter-spacing: 4px; }
+  .retry-btn {
+    font-family: inherit;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--soft);
+    border-radius: 8px;
+    padding: 5px 14px;
+    cursor: pointer;
+  }
   @media print {
     .tabs, .datebar button, .footer-row, .readbtn, .note, header .sub { display: none !important; }
     body { background: #fff; }
@@ -249,6 +301,7 @@
 
   <div class="tabs">
     <button id="tab-daily" class="active" onclick="showTab('daily')">&#9728;&#65039; Morning Study</button>
+    <button id="tab-kids" onclick="showTab('kids')">&#129490; Kids Quiz</button>
     <button id="tab-weekly" onclick="showTab('weekly')">&#128149; Couples Study</button>
   </div>
 
@@ -262,6 +315,18 @@
       <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
     </div>
     <div class="card" id="daily-card"></div>
+  </div>
+
+  <div id="view-kids" style="display:none">
+    <div class="datebar">
+      <button class="navbtn" onclick="moveDay(-1)">&larr;</button>
+      <div class="when">
+        <div class="big" id="kids-date"></div>
+        <div class="small"><button class="navbtn todaybtn" onclick="goToday()">Jump to today</button></div>
+      </div>
+      <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
+    </div>
+    <div class="card" id="kids-card"></div>
   </div>
 
   <div id="view-weekly" style="display:none">
@@ -281,6 +346,7 @@
 
 <script src="daily.js"></script>
 <script src="weekly.js"></script>
+<script src="kids.js"></script>
 <script>
 // ---------- Date helpers ----------
 const MS_DAY = 86400000;
@@ -393,10 +459,10 @@ function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
 // ---------- Rendering ----------
 function showTab(which) {
-  document.getElementById('view-daily').style.display = which === 'daily' ? '' : 'none';
-  document.getElementById('view-weekly').style.display = which === 'weekly' ? '' : 'none';
-  document.getElementById('tab-daily').classList.toggle('active', which === 'daily');
-  document.getElementById('tab-weekly').classList.toggle('active', which === 'weekly');
+  for (const t of ['daily', 'kids', 'weekly']) {
+    document.getElementById('view-' + t).style.display = t === which ? '' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === which);
+  }
 }
 function moveDay(n) { viewDate.setDate(viewDate.getDate() + n); render(); }
 function goToday() { viewDate = new Date(); render(); }
@@ -406,7 +472,73 @@ function goThisWeek() { viewWeekOffset = 0; render(); }
 function render() {
   passageCounter = 0;
   renderDaily();
+  renderKids();
   renderWeekly();
+}
+
+// ---------- Kids quiz ----------
+function kidsKey(d) { return 'fbs.kids.' + dateKey(d); }
+function answerQuiz(qi, oi) {
+  const answers = load(kidsKey(viewDate)) || {};
+  if (answers[qi] !== undefined) return; // already answered
+  answers[qi] = oi;
+  store(kidsKey(viewDate), answers);
+  renderKids();
+}
+function resetQuiz() {
+  try { localStorage.removeItem(kidsKey(viewDate)); } catch(e) {}
+  renderKids();
+}
+function renderKids() {
+  const d = viewDate;
+  const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
+  const theme = DAILY[idx];
+  const k = KIDS[idx % KIDS.length];
+  const answers = load(kidsKey(d)) || {};
+  const total = k.quiz.length;
+  const answered = Object.keys(answers).length;
+  const score = k.quiz.reduce((s, q, i) => s + (answers[i] === q.c ? 1 : 0), 0);
+
+  document.getElementById('kids-date').textContent = fmtLong.format(d);
+
+  let html = `
+    <div class="theme-label">Kids Quiz &mdash; Today's Theme</div>
+    <h2>${esc(theme.t)}</h2>
+    <div class="body-text">Listen to the morning study first, then see how many you can get right. Tap your answer!</div>`;
+
+  k.quiz.forEach((q, qi) => {
+    const chosen = answers[qi];
+    html += `<div class="quiz-q"><span class="qnum">${qi + 1}</span>${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt, oi) => {
+      let cls = 'opt';
+      if (chosen !== undefined) {
+        if (oi === q.c) cls += ' correct';
+        else if (oi === chosen) cls += ' wrong';
+      }
+      const mark = chosen !== undefined ? (oi === q.c ? ' ✓' : (oi === chosen ? ' ✗' : '')) : '';
+      html += `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})">${esc(opt)}${mark}</button>`;
+    });
+    html += `</div>`;
+  });
+
+  if (answered === total) {
+    const stars = '⭐'.repeat(score) + '☆'.repeat(total - score);
+    const cheer = score === total ? 'Perfect! You were really listening!' :
+                  score >= total - 1 ? 'Great job — so close to perfect!' :
+                  'Good try! Ask the family about the ones you missed.';
+    html += `
+      <div class="score-banner">
+        <div class="stars">${stars}</div>
+        <div>You got <b>${score} of ${total}</b>! ${cheer}</div>
+        <button class="retry-btn" onclick="resetQuiz()">Try again</button>
+      </div>`;
+  }
+
+  html += `
+    <h3 class="section">Fun Challenge</h3>
+    <div class="activity">&#127919; ${esc(k.fun)}</div>`;
+
+  document.getElementById('kids-card').innerHTML = html;
 }
 
 function renderDaily() {
