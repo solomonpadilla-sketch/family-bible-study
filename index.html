@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Bible Study</title>
+<style>
+  :root {
+    --cream: #faf6ee;
+    --card: #ffffff;
+    --ink: #2d2a24;
+    --soft: #6b6353;
+    --green: #3d5a3d;
+    --green-dark: #2c422c;
+    --gold: #b8934a;
+    --gold-light: #f3e8d2;
+    --burgundy: #7a3b3b;
+    --line: #e8e0d0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px 60px; }
+
+  header {
+    text-align: center;
+    padding: 28px 16px 18px;
+  }
+  header h1 {
+    font-size: 1.7rem;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+    font-weight: normal;
+  }
+  header h1 .cross { color: var(--gold); }
+  header .sub {
+    font-style: italic;
+    color: var(--soft);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 10px 0 22px;
+  }
+  .tabs button {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 10px 22px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--card);
+    color: var(--soft);
+    cursor: pointer;
+  }
+  .tabs button.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+
+  .datebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+  .datebar .when { text-align: center; flex: 1; }
+  .datebar .when .big { font-size: 1.05rem; color: var(--green-dark); }
+  .datebar .when .small { font-size: 0.8rem; color: var(--soft); font-style: italic; }
+  .navbtn {
+    font-family: inherit;
+    font-size: 1rem;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--green-dark);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .navbtn:hover { background: var(--gold-light); }
+  .todaybtn { font-size: 0.85rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 26px 22px;
+    box-shadow: 0 2px 10px rgba(60,50,30,0.06);
+    margin-bottom: 18px;
+  }
+  .theme-label {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.72rem;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .card h2 {
+    font-size: 1.45rem;
+    color: var(--green-dark);
+    font-weight: normal;
+    margin-bottom: 14px;
+  }
+  .verse-box {
+    background: var(--gold-light);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-style: italic;
+  }
+  .verse-box .ref {
+    display: block;
+    font-style: normal;
+    font-size: 0.85rem;
+    color: var(--burgundy);
+    margin-top: 6px;
+  }
+  .body-text { margin: 14px 0; }
+  h3.section {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--burgundy);
+    margin: 22px 0 8px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 5px;
+    font-weight: normal;
+  }
+  ol.questions { padding-left: 22px; }
+  ol.questions li { margin-bottom: 9px; }
+  .prayer {
+    font-style: italic;
+    color: var(--soft);
+  }
+  .readings { list-style: none; }
+  .readings li {
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .readings li:last-child { border-bottom: none; }
+  .readings .what { color: var(--soft); font-size: 0.85rem; }
+  .readbtn {
+    font-family: inherit;
+    font-size: 0.8rem;
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--green);
+    border-radius: 6px;
+    padding: 3px 10px;
+    cursor: pointer;
+  }
+  .readbtn:hover { background: var(--gold-light); }
+  .passage-text {
+    display: none;
+    width: 100%;
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    font-size: 0.95rem;
+    white-space: pre-line;
+  }
+  .activity {
+    background: var(--cream);
+    border: 1px dashed var(--gold);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 8px 0;
+  }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .complete-btn {
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 9px 20px;
+    border-radius: 24px;
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+  }
+  .complete-btn.done {
+    background: var(--gold-light);
+    color: var(--green-dark);
+    border-color: var(--gold);
+  }
+  .streak {
+    font-size: 0.85rem;
+    color: var(--soft);
+  }
+  .streak b { color: var(--burgundy); }
+  .printbtn {
+    font-family: inherit;
+    font-size: 0.8rem;
+    border: none;
+    background: none;
+    color: var(--soft);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--soft);
+    font-style: italic;
+    margin-top: 8px;
+  }
+  @media print {
+    .tabs, .datebar button, .footer-row, .readbtn, .note, header .sub { display: none !important; }
+    body { background: #fff; }
+    .card { box-shadow: none; border: none; padding: 0; }
+  }
+  @media (max-width: 480px) {
+    .card { padding: 20px 16px; }
+    header h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="cross">&#10013;</span> Family Bible Study</h1>
+    <div class="sub">"Your word is a lamp to my feet, and a light for my path." &mdash; Psalm 119:105</div>
+  </header>
+
+  <div class="tabs">
+    <button id="tab-daily" class="active" onclick="showTab('daily')">&#9728;&#65039; Morning Study</button>
+    <button id="tab-weekly" onclick="showTab('weekly')">&#128149; Couples Study</button>
+  </div>
+
+  <div id="view-daily">
+    <div class="datebar">
+      <button class="navbtn" onclick="moveDay(-1)">&larr;</button>
+      <div class="when">
+        <div class="big" id="daily-date"></div>
+        <div class="small"><button class="navbtn todaybtn" onclick="goToday()">Jump to today</button></div>
+      </div>
+      <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
+    </div>
+    <div class="card" id="daily-card"></div>
+  </div>
+
+  <div id="view-weekly" style="display:none">
+    <div class="datebar">
+      <button class="navbtn" onclick="moveWeek(-1)">&larr;</button>
+      <div class="when">
+        <div class="big" id="weekly-date"></div>
+        <div class="small"><button class="navbtn todaybtn" onclick="goThisWeek()">Jump to this week</button></div>
+      </div>
+      <button class="navbtn" onclick="moveWeek(1)">&rarr;</button>
+    </div>
+    <div class="card" id="weekly-card"></div>
+  </div>
+
+  <div class="note">Scripture text: World English Bible (public domain). Verses load when online and are saved for offline use.</div>
+</div>
+
+<script src="daily.js"></script>
+<script src="weekly.js"></script>
+<script>
+// ---------- Date helpers ----------
+const MS_DAY = 86400000;
+let viewDate = new Date();           // date shown on the daily tab
+let viewWeekOffset = 0;              // weeks from current week on couples tab
+
+function dayOfYear(d) {
+  const start = new Date(d.getFullYear(), 0, 1);
+  return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - start) / MS_DAY) + 1;
+}
+function dateKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function mondayOf(d) {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = (x.getDay() + 6) % 7;  // Monday = 0
+  x.setDate(x.getDate() - dow);
+  return x;
+}
+function weekNum(d) {
+  const mon = mondayOf(d);
+  return Math.floor((mon.getTime() - new Date(1970,0,5).getTime()) / (MS_DAY * 7));
+}
+const fmtLong = new Intl.DateTimeFormat('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+const fmtShort = new Intl.DateTimeFormat('en-US', { month:'short', day:'numeric' });
+
+// ---------- Reading plan ----------
+const NT_BOOKS = [["Matthew",28],["Mark",16],["Luke",24],["John",21],["Acts",28],["Romans",16],
+  ["1 Corinthians",16],["2 Corinthians",13],["Galatians",6],["Ephesians",6],["Philippians",4],
+  ["Colossians",4],["1 Thessalonians",5],["2 Thessalonians",3],["1 Timothy",6],["2 Timothy",4],
+  ["Titus",3],["Philemon",1],["Hebrews",13],["James",5],["1 Peter",5],["2 Peter",3],
+  ["1 John",5],["2 John",1],["3 John",1],["Jude",1],["Revelation",22]];
+const NT_TOTAL = NT_BOOKS.reduce((s,b)=>s+b[1],0); // 260
+
+function ntChapter(idx) {
+  let i = ((idx % NT_TOTAL) + NT_TOTAL) % NT_TOTAL;
+  for (const [book, ch] of NT_BOOKS) {
+    if (i < ch) return book + ' ' + (i + 1);
+    i -= ch;
+  }
+}
+function readingsFor(d) {
+  const doy = dayOfYear(d);
+  const daysSinceEpoch = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(1970,0,1)) / MS_DAY);
+  return {
+    nt: ntChapter(daysSinceEpoch),
+    psalm: 'Psalms ' + (((doy - 1) % 150) + 1),
+    proverbs: 'Proverbs ' + Math.min(d.getDate(), 31)
+  };
+}
+
+// ---------- Storage ----------
+function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
+
+function isDone(kind, key) { return !!(load('fbs.done.'+kind) || {})[key]; }
+function toggleDone(kind, key) {
+  const m = load('fbs.done.'+kind) || {};
+  if (m[key]) delete m[key]; else m[key] = true;
+  store('fbs.done.'+kind, m);
+  render();
+}
+function dailyStreak() {
+  const m = load('fbs.done.daily') || {};
+  let n = 0;
+  let d = new Date();
+  if (!m[dateKey(d)]) d.setDate(d.getDate() - 1); // today not done yet doesn't break streak
+  while (m[dateKey(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+// ---------- Scripture fetching (WEB translation, cached) ----------
+async function fetchPassage(ref) {
+  const key = 'fbs.verse.' + ref;
+  const cached = load(key);
+  if (cached) return cached;
+  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=web');
+  if (!res.ok) throw new Error('fetch failed');
+  const data = await res.json();
+  const text = (data.text || '').trim().replace(/\n{2,}/g, '\n');
+  store(key, text);
+  return text;
+}
+function verseSlot(id, ref) {
+  fetchPassage(ref).then(text => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '“' + text.replace(/\s+/g,' ').trim() + '”';
+  }).catch(() => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'Open your Bible to ' + ref + ' and read it aloud together.';
+  });
+}
+let passageCounter = 0;
+function passageToggle(ref) {
+  const pid = 'passage-' + (passageCounter++);
+  return `<button class="readbtn" onclick="togglePassage('${pid}', '${ref.replace(/'/g,"\\'")}')">Show text</button>
+          <div class="passage-text" id="${pid}"></div>`;
+}
+function togglePassage(pid, ref) {
+  const el = document.getElementById(pid);
+  if (el.style.display === 'block') { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  if (!el.textContent) {
+    el.textContent = 'Loading…';
+    fetchPassage(ref).then(t => { el.textContent = t; })
+      .catch(() => { el.textContent = 'Could not load (offline?). Read ' + ref + ' in your Bible.'; });
+  }
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+// ---------- Rendering ----------
+function showTab(which) {
+  document.getElementById('view-daily').style.display = which === 'daily' ? '' : 'none';
+  document.getElementById('view-weekly').style.display = which === 'weekly' ? '' : 'none';
+  document.getElementById('tab-daily').classList.toggle('active', which === 'daily');
+  document.getElementById('tab-weekly').classList.toggle('active', which === 'weekly');
+}
+function moveDay(n) { viewDate.setDate(viewDate.getDate() + n); render(); }
+function goToday() { viewDate = new Date(); render(); }
+function moveWeek(n) { viewWeekOffset += n; render(); }
+function goThisWeek() { viewWeekOffset = 0; render(); }
+
+function render() {
+  passageCounter = 0;
+  renderDaily();
+  renderWeekly();
+}
+
+function renderDaily() {
+  const d = viewDate;
+  const key = dateKey(d);
+  const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
+  const s = DAILY[idx];
+  const r = readingsFor(d);
+  const done = isDone('daily', key);
+  const streak = dailyStreak();
+
+  document.getElementById('daily-date').textContent = fmtLong.format(d);
+  document.getElementById('daily-card').innerHTML = `
+    <div class="theme-label">Today's Theme</div>
+    <h2>${esc(s.t)}</h2>
+    <div class="verse-box">
+      <span id="daily-verse">Loading verse…</span>
+      <span class="ref">&mdash; ${esc(s.ref)} (WEB)</span>
+    </div>
+    <div class="body-text">${esc(s.body)}</div>
+    <h3 class="section">Talk About It Together</h3>
+    <ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
+    <h3 class="section">Today's Readings</h3>
+    <ul class="readings">
+      <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; New Testament</span></span> ${passageToggle(r.nt)}</li>
+      <li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; Psalm of the day</span></span> ${passageToggle(r.psalm)}</li>
+      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; Proverb for the ${d.getDate()}${ord(d.getDate())}</span></span> ${passageToggle(r.proverbs)}</li>
+    </ul>
+    <h3 class="section">Morning Prayer</h3>
+    <p class="prayer">${esc(s.prayer)}</p>
+    <div class="footer-row">
+      <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('daily','${key}')">
+        ${done ? '✓ Completed' : 'Mark Complete'}
+      </button>
+      <span class="streak">&#128293; Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}</span>
+      <button class="printbtn" onclick="window.print()">Print</button>
+    </div>`;
+  verseSlot('daily-verse', s.ref);
+}
+
+function renderWeekly() {
+  const wn = weekNum(new Date()) + viewWeekOffset;
+  const mon = mondayOf(new Date());
+  mon.setDate(mon.getDate() + viewWeekOffset * 7);
+  const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+  const idx = ((wn % WEEKLY.length) + WEEKLY.length) % WEEKLY.length;
+  const s = WEEKLY[idx];
+  const key = 'w' + wn;
+  const done = isDone('weekly', key);
+
+  document.getElementById('weekly-date').textContent = 'Week of ' + fmtShort.format(mon) + ' – ' + fmtShort.format(sun) + ', ' + sun.getFullYear();
+  document.getElementById('weekly-card').innerHTML = `
+    <div class="theme-label">This Week for the Two of You</div>
+    <h2>${esc(s.t)}</h2>
+    <div class="verse-box">
+      <span id="weekly-verse">Loading passage…</span>
+      <span class="ref">&mdash; ${esc(s.ref)} (WEB)</span>
+    </div>
+    <div class="body-text">${esc(s.intro)}</div>
+    <h3 class="section">Read Together</h3>
+    <ul class="readings">
+      <li><span><b>${esc(s.ref)}</b></span> ${passageToggle(s.ref)}</li>
+    </ul>
+    <h3 class="section">Talk It Through</h3>
+    <ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
+    <h3 class="section">This Week's Practice</h3>
+    <div class="activity">${esc(s.act)}</div>
+    <h3 class="section">Pray Together</h3>
+    <p class="prayer">${esc(s.prayer)}</p>
+    <div class="footer-row">
+      <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('weekly','${key}')">
+        ${done ? '✓ Completed' : 'Mark Complete'}
+      </button>
+      <button class="printbtn" onclick="window.print()">Print</button>
+    </div>`;
+  verseSlot('weekly-verse', s.ref);
+}
+
+function ord(n) {
+  if (n % 100 >= 11 && n % 100 <= 13) return 'th';
+  return ['th','st','nd','rd'][n % 10] || 'th';
+}
+
+render();
+</script>
+</body>
+</html>
