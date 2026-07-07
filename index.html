@@ -28,6 +28,12 @@
     --line: rgba(255,255,255,0.16);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  .icon {
+    width: 1.05em;
+    height: 1.05em;
+    vertical-align: -0.18em;
+    display: inline-block;
+  }
   body {
     font-family: 'Nunito Sans', 'Avenir Next', 'Segoe UI', Arial, sans-serif;
     background: linear-gradient(350deg, var(--bg1), var(--bg2)) fixed;
@@ -352,6 +358,7 @@
     pointer-events: none;
     animation: conffall 2.9s linear forwards;
   }
+  .confetti-piece svg { width: 100%; height: 100%; }
   @keyframes conffall {
     to { transform: translateY(110vh) rotate(540deg); opacity: 0.5; }
   }
@@ -452,14 +459,14 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><span class="cross">&#10013;</span> Family Bible Study</h1>
+    <h1><span class="cross"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2.5h4V9h6.5v4H14v8.5h-4V13H3.5V9H10z"/></svg></span> Family Bible Study</h1>
     <div class="sub">"Your word is a lamp to my feet, and a light for my path." &mdash; Psalm 119:105</div>
   </header>
 
   <div class="tabs">
-    <button id="tab-daily" class="active" onclick="showTab('daily')">&#9728;&#65039; Morning Study</button>
-    <button id="tab-prayers" onclick="showTab('prayers')">&#128591; Prayers</button>
-    <button id="tab-weekly" onclick="showTab('weekly')">&#128149; Couples Study</button>
+    <button id="tab-daily" class="active" onclick="showTab('daily')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M1 12h3M20 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/></svg> Morning Study</button>
+    <button id="tab-prayers" onclick="showTab('prayers')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c-1.2 1.8-2 2.9-2 4a2 2 0 0 0 4 0c0-1.1-.8-2.2-2-4z"/><rect x="9" y="10" width="6" height="9" rx="1"/><path d="M5 21h14"/></svg> Prayers</button>
+    <button id="tab-weekly" onclick="showTab('weekly')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Couples Study</button>
   </div>
 
   <div id="view-daily">
@@ -558,7 +565,11 @@ function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) 
 function isDone(kind, key) { return !!(load('fbs.done.'+kind) || {})[key]; }
 const MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
 function streakBadge(n) {
-  return n >= 365 ? ' 👑' : n >= 100 ? ' 🥇' : n >= 30 ? ' 🥈' : n >= 7 ? ' 🥉' : '';
+  if (n >= 365) return ' <span style="color:#f7cc51">' + icon('crown', 'fill:currentColor') + '</span>';
+  if (n >= 100) return ' <span style="color:#ffd766">' + icon('award') + '</span>';
+  if (n >= 30) return ' <span style="color:#c9ced6">' + icon('award') + '</span>';
+  if (n >= 7) return ' <span style="color:#d08a4e">' + icon('award') + '</span>';
+  return '';
 }
 function toggleDone(kind, key) {
   const m = load('fbs.done.'+kind) || {};
@@ -568,14 +579,22 @@ function toggleDone(kind, key) {
   render();
 }
 function confetti() {
-  const EMO = ['🎉','⭐','✨','🙌','💛'];
+  const COLORS = ['#dbe65b', '#f7cc51', '#0ab1b4', '#dfa5f7', '#e73722', '#3cb847'];
+  const SHAPES = [
+    c => `<rect x="7" y="9" width="10" height="6" rx="1" fill="${c}"/>`,
+    c => `<circle cx="12" cy="12" r="5" fill="${c}"/>`,
+    c => `<polygon points="12 4 14.4 9.2 20 10 15.8 14 17 19.6 12 16.9 7 19.6 8.2 14 4 10 9.6 9.2" fill="${c}"/>`
+  ];
   for (let i = 0; i < 36; i++) {
     const el = document.createElement('div');
     el.className = 'confetti-piece';
-    el.textContent = EMO[i % EMO.length];
+    const c = COLORS[i % COLORS.length];
+    el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${SHAPES[i % SHAPES.length](c)}</svg>`;
     el.style.left = (Math.random() * 100) + 'vw';
     el.style.animationDelay = (Math.random() * 0.5) + 's';
-    el.style.fontSize = (16 + Math.random() * 22) + 'px';
+    const s = 14 + Math.random() * 16;
+    el.style.width = s + 'px';
+    el.style.height = s + 'px';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3400);
   }
@@ -654,7 +673,7 @@ function renderPassagePanel(pid, shareLabel) {
   el.innerHTML = `
     <div class="pt-toolbar">
       <span class="pt-hint">${sel.size ? sel.size + ' verse' + (sel.size > 1 ? 's' : '') + ' selected' : 'Tap verses to select, then share'}</span>
-      <button class="readbtn" ${sel.size ? '' : 'disabled'} onclick="sharePassage('${pid}')">${shareLabel || '📤 Share'}</button>
+      <button class="readbtn" ${sel.size ? '' : 'disabled'} onclick="sharePassage('${pid}')">${shareLabel || icon('share') + ' Share'}</button>
     </div>` +
     verses.map((v, i) =>
       `<span class="pt-verse${sel.has(i) ? ' sel' : ''}" onclick="toggleVerseSel('${pid}',${i})"><b class="vnum">${multiCh ? v.c + ':' : ''}${v.v}</b>${esc(v.t)}</span>`
@@ -702,10 +721,38 @@ async function sharePassage(pid) {
     try { copied = document.execCommand('copy'); } catch (e) {}
     ta.remove();
   }
-  renderPassagePanel(pid, copied ? '✓ Copied!' : '⚠ Could not copy');
+  renderPassagePanel(pid, copied ? icon('check') + ' Copied!' : icon('alert') + ' Could not copy');
   setTimeout(() => renderPassagePanel(pid), 1800);
 }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+// ---------- Inline SVG icons (Feather/Lucide-style) ----------
+const ICONS = {
+  sun: '<circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M1 12h3M20 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/>',
+  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  candle: '<path d="M12 2c-1.2 1.8-2 2.9-2 4a2 2 0 0 0 4 0c0-1.1-.8-2.2-2-4z"/><rect x="9" y="10" width="6" height="9" rx="1"/><path d="M5 21h14"/>',
+  smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  volume: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+  share: '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><path d="M12 2v13"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  checkCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  award: '<circle cx="12" cy="8" r="6"/><path d="M8.7 13.4 7 22l5-3 5 3-1.7-8.6"/>',
+  crown: '<path d="M3 18h18l-1.6-9-4.4 4-3-7.5L9 13 4.6 9z"/>',
+  sprout: '<path d="M12 21v-7"/><path d="M12 14c0-3.5-2.8-5-6-5 0 3.5 2.8 5 6 5z"/><path d="M12 12c0-3 2.4-4.5 5.5-4.5 0 3-2.4 4.5-5.5 4.5z"/>',
+  leaf: '<path d="M6 20C6 10 12 4 20 4c0 8-6 14-14 16z"/><path d="M6 20c3-6 7-10 12-13"/>',
+  tree: '<path d="M12 3 7 10h2.5L5 16h14l-4.5-6H17z"/><path d="M12 16v5"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/>',
+  alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>'
+};
+function icon(name, style) {
+  return '<svg class="icon"' + (style ? ' style="' + style + '"' : '') +
+    ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    ICONS[name] + '</svg>';
+}
 
 // ---------- Rendering ----------
 function showTab(which) {
@@ -781,8 +828,9 @@ async function shareVerse() {
   g.addColorStop(0, '#2c146c'); g.addColorStop(1, '#590083');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1080);
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#f7cc51'; ctx.font = '70px Georgia';
-  ctx.fillText('✝', 540, 150);
+  ctx.fillStyle = '#f7cc51';
+  ctx.fillRect(526, 62, 28, 108);  // gold cross
+  ctx.fillRect(492, 92, 96, 28);
   ctx.fillStyle = '#ffffff'; ctx.font = 'italic 44px Georgia';
   let lines = [], line = '';
   for (const w of ('“' + verse + '”').split(' ')) {
@@ -840,14 +888,14 @@ function renderMemory() {
   const memorized = !!(load('fbs.mem') || {})['w' + wn];
   const el = document.getElementById('memory-card');
   el.innerHTML = `
-    <div class="theme-label">⭐ Memory Verse of the Week</div>
-    <h2>${esc(mv.t)} ${memorized ? '<span class="mem-badge">⭐ Memorized!</span>' : ''}</h2>
+    <div class="theme-label">${icon('star')} Memory Verse of the Week</div>
+    <h2>${esc(mv.t)} ${memorized ? '<span class="mem-badge">' + icon('star', 'fill:currentColor') + ' Memorized!</span>' : ''}</h2>
     <div class="body-text readings-note">Practice all week: hide more words each time until you can say it by heart. Tap a hidden word to peek.</div>
     <div class="mem-words" id="mem-words">Loading verse…</div>
     <div class="verse-box" style="padding:10px 16px"><span class="ref" style="margin-top:0">— ${esc(mv.ref)} (WEB)</span></div>
     <div class="mem-controls">
       <button class="readbtn" onclick="memLevel()">${memState.level === 3 ? 'Show it again' : 'Hide ' + (memState.level === 0 ? 'some' : 'more') + ' words'}</button>
-      ${memorized ? '' : '<button class="complete-btn" onclick="memGotIt()">I can say it! ⭐</button>'}
+      ${memorized ? '' : '<button class="complete-btn" onclick="memGotIt()">I can say it! ' + icon('star', 'fill:currentColor') + '</button>'}
     </div>`;
   window._memRef = mv.ref;
   fetchPassage(mv.ref).then(t => {
@@ -897,7 +945,7 @@ function renderPrayers() {
   const mon = mondayOf(new Date());
   const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
   document.getElementById('prayers-card').innerHTML = `
-    <div class="theme-label">🙏 Prayers of the Week</div>
+    <div class="theme-label">${icon('candle')} Prayers of the Week</div>
     <h2>What We're Praying For</h2>
     <div class="body-text readings-note">Week of ${fmtShort.format(mon)} – ${fmtShort.format(sun)}. Prayers carry over every week until God answers — then check them off and watch the answered list grow.</div>
     <div class="pray-add">
@@ -913,14 +961,14 @@ function renderPrayers() {
           <div class="pray-meta">praying since ${fmtShort.format(new Date(p.created))}${w >= 1 ? ' · ' + w + ' week' + (w > 1 ? 's' : '') + ' and counting' : ''}</div>
         </div>
         <div class="pray-actions">
-          <button class="readbtn" onclick="answerPrayer('${p.id}')">✓ Answered!</button>
-          <button class="pray-del" onclick="removePrayer('${p.id}')" title="Remove">✕</button>
+          <button class="readbtn" onclick="answerPrayer('${p.id}')">${icon('check')} Answered!</button>
+          <button class="pray-del" onclick="removePrayer('${p.id}')" title="Remove">${icon('x')}</button>
         </div>
       </div>`; }).join('') : '<p class="readings-note">Nothing here yet — add your first prayer above.</p>'}
-    <h3 class="section">Answered prayers (${answered.length}) 🎉</h3>
+    <h3 class="section">Answered prayers (${answered.length}) ${icon('sparkle', 'color:var(--banana)')}</h3>
     ${answered.length ? answered.map(p => `
       <div class="pray-item">
-        <div class="pray-text">✅ ${esc(p.text)}
+        <div class="pray-text"><span style="color:var(--green)">${icon('checkCircle')}</span> ${esc(p.text)}
           <div class="pray-meta">asked ${fmtShort.format(new Date(p.created))} → answered ${fmtShort.format(new Date(p.answered))}</div>
         </div>
       </div>`).join('') : '<p class="readings-note">Answered prayers collect here — your family\'s story of God\'s faithfulness.</p>'}`;
@@ -950,7 +998,7 @@ function renderKids() {
   const score = k.quiz.reduce((s, q, i) => s + (answers[i] === q.c ? 1 : 0), 0);
 
   let html = `
-    <div class="theme-label">&#129490; Kids Quiz</div>
+    <div class="theme-label">${icon('smile')} Kids Quiz</div>
     <h2>How Well Were You Listening?</h2>
     <div class="body-text readings-note">Three quick questions about today's study. Tap your answer!</div>`;
 
@@ -963,14 +1011,16 @@ function renderKids() {
         if (oi === q.c) cls += ' correct';
         else if (oi === chosen) cls += ' wrong';
       }
-      const mark = chosen !== undefined ? (oi === q.c ? ' ✓' : (oi === chosen ? ' ✗' : '')) : '';
+      const mark = chosen !== undefined ? (oi === q.c ? ' ' + icon('check') : (oi === chosen ? ' ' + icon('x') : '')) : '';
       html += `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})">${esc(opt)}${mark}</button>`;
     });
     html += `</div>`;
   });
 
   if (answered === total) {
-    const stars = '⭐'.repeat(score) + '☆'.repeat(total - score);
+    const stars = Array.from({ length: total }, (_, i) =>
+      icon('star', i < score ? 'color:#f7cc51;fill:#f7cc51' : 'color:rgba(255,255,255,0.35)')
+    ).join(' ');
     const cheer = score === total ? 'Perfect! You were really listening!' :
                   score >= total - 1 ? 'Great job — so close to perfect!' :
                   'Good try! Ask the family about the ones you missed.';
@@ -984,7 +1034,7 @@ function renderKids() {
 
   html += `
     <h3 class="section">Fun Challenge</h3>
-    <div class="activity">&#127919; ${esc(k.fun)}</div>`;
+    <div class="activity">${icon('target', 'color:var(--banana)')} ${esc(k.fun)}</div>`;
 
   document.getElementById('kids-card').innerHTML = html;
 }
@@ -1005,7 +1055,7 @@ function renderDaily() {
 
   document.getElementById('daily-date').textContent = fmtLong.format(d);
   document.getElementById('daily-card').innerHTML = `
-    <div class="theme-label">${sp ? '✨ ' + esc(sp.label) : "Today's Theme"}</div>
+    <div class="theme-label">${sp ? icon('sparkle') + ' ' + esc(sp.label) : "Today's Theme"}</div>
     <h2>${esc(s.t)}</h2>
     <div class="verse-box">
       <span id="daily-verse">Loading verse…</span>
@@ -1017,9 +1067,9 @@ function renderDaily() {
     <h3 class="section">Today's Readings</h3>
     <p class="readings-note">One reading per age &mdash; each reader graduates to the next as they grow.</p>
     <ul class="readings">
-      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; &#127793; Little ones (ages 4&ndash;8)</span></span> ${passageToggle(r.proverbs)}</li>
-      <li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; &#127807; Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>
-      <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; &#127795; Teens &amp; adults</span></span> ${passageToggle(r.nt)}</li>
+      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8)</span></span> ${passageToggle(r.proverbs)}</li>
+      <li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>
+      <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(r.nt)}</li>
     </ul>
     <div class="progress-row"><span class="progress-label">New Testament journey</span><div class="bar"><div class="fill" style="width:${ntPct}%"></div></div><span class="progress-pct">${ntPct}%</span></div>
     <div class="progress-row"><span class="progress-label">Psalms journey</span><div class="bar"><div class="fill" style="width:${psPct}%"></div></div><span class="progress-pct">${psPct}%</span></div>
@@ -1027,12 +1077,12 @@ function renderDaily() {
     <p class="prayer">${esc(s.prayer)}</p>
     <div class="footer-row">
       <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('daily','${key}')">
-        ${done ? '✓ Completed' : 'Mark Complete'}
+        ${done ? icon('check') + ' Completed' : 'Mark Complete'}
       </button>
-      <span class="streak">&#128293; Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}${streakBadge(streak)}</span>
+      <span class="streak"><span style="color:var(--tangerine)">${icon('flame')}</span> Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}${streakBadge(streak)}</span>
       <span class="toolrow">
-        <button class="readbtn" onclick="listenDaily()">🔊 Listen</button>
-        <button class="readbtn" onclick="shareVerse()">📤 Share</button>
+        <button class="readbtn" onclick="listenDaily()">${icon('volume')} Listen</button>
+        <button class="readbtn" onclick="shareVerse()">${icon('share')} Share</button>
         <button class="printbtn" onclick="window.print()">Print</button>
       </span>
     </div>`;
@@ -1070,7 +1120,7 @@ function renderWeekly() {
     <p class="prayer">${esc(s.prayer)}</p>
     <div class="footer-row">
       <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('weekly','${key}')">
-        ${done ? '✓ Completed' : 'Mark Complete'}
+        ${done ? icon('check') + ' Completed' : 'Mark Complete'}
       </button>
       <button class="printbtn" onclick="window.print()">Print</button>
     </div>`;

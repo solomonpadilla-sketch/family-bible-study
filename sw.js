@@ -1,5 +1,5 @@
 // Offline support: precache the app shell, then stale-while-revalidate for same-origin + Google Fonts.
-const CACHE = 'fbs-v5';
+const CACHE = 'fbs-v6';
 const ASSETS = ['./', 'index.html', 'daily.js', 'weekly.js', 'kids.js', 'memory.js', 'specials.js',
   'manifest.json', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
