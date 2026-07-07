@@ -197,10 +197,44 @@
     width: 100%;
     background: rgba(12,2,9,0.3);
     border-radius: 14px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     margin-top: 8px;
-    font-size: 0.95rem;
-    white-space: pre-line;
+    font-size: 0.92rem;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .pt-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    position: sticky;
+    top: -12px;
+    background: rgba(31,9,56,0.96);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .pt-hint { font-size: 0.75rem; font-style: italic; color: var(--soft); }
+  .pt-toolbar .readbtn:disabled { opacity: 0.45; cursor: default; }
+  .pt-verse {
+    display: block;
+    padding: 5px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2px;
+    line-height: 1.55;
+  }
+  .pt-verse:hover { background: rgba(255,255,255,0.06); }
+  .pt-verse.sel {
+    background: rgba(219,230,91,0.16);
+    box-shadow: inset 3px 0 0 var(--lime);
+  }
+  .vnum {
+    color: var(--banana);
+    font-size: 0.68rem;
+    vertical-align: super;
+    margin-right: 5px;
   }
   .activity {
     background: rgba(247,204,81,0.12);
@@ -584,15 +618,92 @@ function passageToggle(ref) {
   return `<button class="readbtn" onclick="togglePassage('${pid}', '${ref.replace(/'/g,"\\'")}')">Show text</button>
           <div class="passage-text" id="${pid}"></div>`;
 }
+async function fetchVerses(ref) {
+  const key = 'fbs.vv.' + ref;
+  const cached = load(key);
+  if (cached) return cached;
+  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=web');
+  if (!res.ok) throw new Error('fetch failed');
+  const data = await res.json();
+  const verses = (data.verses || []).map(v => ({ c: v.chapter, v: v.verse, t: (v.text || '').replace(/\s+/g, ' ').trim() }));
+  if (!verses.length) throw new Error('no verses');
+  store(key, verses);
+  if (!load('fbs.verse.' + ref)) store('fbs.verse.' + ref, (data.text || '').trim().replace(/\n{2,}/g, '\n'));
+  return verses;
+}
+const _pverses = {}, _psel = {}, _pref = {};
 function togglePassage(pid, ref) {
   const el = document.getElementById(pid);
   if (el.style.display === 'block') { el.style.display = 'none'; return; }
   el.style.display = 'block';
-  if (!el.textContent) {
-    el.textContent = 'Loading…';
-    fetchPassage(ref).then(t => { el.textContent = t; })
-      .catch(() => { el.textContent = 'Could not load (offline?). Read ' + ref + ' in your Bible.'; });
+  if (el.dataset.loaded) return;
+  el.textContent = 'Loading…';
+  fetchVerses(ref).then(verses => {
+    el.dataset.loaded = '1';
+    _pverses[pid] = verses;
+    _psel[pid] = new Set();
+    _pref[pid] = ref;
+    renderPassagePanel(pid);
+  }).catch(() => { el.textContent = 'Could not load (offline?). Read ' + ref + ' in your Bible.'; });
+}
+function renderPassagePanel(pid, shareLabel) {
+  const el = document.getElementById(pid);
+  if (!el) return;
+  const verses = _pverses[pid], sel = _psel[pid];
+  const multiCh = new Set(verses.map(v => v.c)).size > 1;
+  el.innerHTML = `
+    <div class="pt-toolbar">
+      <span class="pt-hint">${sel.size ? sel.size + ' verse' + (sel.size > 1 ? 's' : '') + ' selected' : 'Tap verses to select, then share'}</span>
+      <button class="readbtn" ${sel.size ? '' : 'disabled'} onclick="sharePassage('${pid}')">${shareLabel || '📤 Share'}</button>
+    </div>` +
+    verses.map((v, i) =>
+      `<span class="pt-verse${sel.has(i) ? ' sel' : ''}" onclick="toggleVerseSel('${pid}',${i})"><b class="vnum">${multiCh ? v.c + ':' : ''}${v.v}</b>${esc(v.t)}</span>`
+    ).join('');
+}
+function toggleVerseSel(pid, i) {
+  const sel = _psel[pid];
+  if (sel.has(i)) sel.delete(i); else sel.add(i);
+  renderPassagePanel(pid);
+}
+function verseRangeLabel(verses, selSet) {
+  const picked = [...selSet].sort((a, b) => a - b).map(i => verses[i]);
+  const fmt = (a, b) => a === b ? a.c + ':' + a.v
+    : a.c === b.c ? a.c + ':' + a.v + '-' + b.v
+    : a.c + ':' + a.v + '-' + b.c + ':' + b.v;
+  const parts = [];
+  let start = null, prev = null;
+  for (const v of picked) {
+    if (prev && v.c === prev.c && v.v === prev.v + 1) { prev = v; continue; }
+    if (start) parts.push(fmt(start, prev));
+    start = v; prev = v;
   }
+  if (start) parts.push(fmt(start, prev));
+  return parts.join(',');
+}
+async function sharePassage(pid) {
+  const verses = _pverses[pid], sel = _psel[pid], ref = _pref[pid];
+  if (!sel.size) return;
+  const book = ref.replace(/\s+\d.*$/, '');
+  const label = book + ' ' + verseRangeLabel(verses, sel);
+  const body = [...sel].sort((a, b) => a - b).map(i => verses[i].v + ' ' + verses[i].t).join('\n');
+  const text = label + ' (WEB)\n\n' + body + '\n\n— Family Bible Study';
+  if (navigator.share) {
+    try { await navigator.share({ text: text, title: label }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  let copied = false;
+  try { await navigator.clipboard.writeText(text); copied = true; } catch (e) {}
+  if (!copied) {
+    // legacy fallback for browsers without async clipboard permission
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { copied = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  }
+  renderPassagePanel(pid, copied ? '✓ Copied!' : '⚠ Could not copy');
+  setTimeout(() => renderPassagePanel(pid), 1800);
 }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 

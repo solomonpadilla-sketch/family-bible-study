@@ -16,6 +16,7 @@ An app with two studies:
 Open `index.html` in any browser — double-click it, or serve the folder. Everyone in the family sees the same study on the same day (it's computed from the date, no server needed).
 
 - Verse text comes from the **World English Bible** (public domain) via bible-api.com when online, and is cached in the browser for offline use afterward.
+- **Show text** panels display numbered verses in a scrollable box — tap verses to select them, then **Share** sends just that section (share sheet on phones, clipboard on desktop) with a smart reference like "Psalms 37:3-5,8".
 - **Mark Complete** tracks a daily streak per device (stored in localStorage).
 - Arrow buttons browse past/future days and weeks; **Print** gives a clean paper copy.
 
