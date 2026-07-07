@@ -311,6 +311,92 @@
     cursor: pointer;
   }
   .retry-btn:hover { border-color: var(--lime); }
+  .confetti-piece {
+    position: fixed;
+    top: -40px;
+    z-index: 999;
+    pointer-events: none;
+    animation: conffall 2.9s linear forwards;
+  }
+  @keyframes conffall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0.5; }
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: var(--soft);
+  }
+  .progress-row .progress-label { min-width: 150px; }
+  .progress-row .bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .progress-row .fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--turquoise), var(--lime));
+  }
+  .toolrow { display: flex; gap: 8px; align-items: center; }
+  .mem-words { margin: 12px 0 4px; line-height: 2.2; }
+  .mem-chip {
+    display: inline-block;
+    margin: 2px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .mem-chip.veiled {
+    background: rgba(12,2,9,0.4);
+    color: var(--soft);
+    cursor: pointer;
+    letter-spacing: 1px;
+    border: 1px dashed var(--line);
+  }
+  .mem-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .mem-badge { font-size: 0.85rem; color: var(--banana); font-family: 'Nunito Sans', sans-serif; font-weight: 700; }
+  .pray-add { display: flex; gap: 8px; margin: 12px 0 8px; }
+  .pray-input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 11px 18px;
+    border-radius: 100px;
+    border: 2px solid var(--line);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    outline: none;
+  }
+  .pray-input::placeholder { color: rgba(255,255,255,0.45); }
+  .pray-input:focus { border-color: var(--lime); }
+  .pray-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .pray-meta { font-size: 0.75rem; color: var(--soft); }
+  .pray-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .pray-del {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+  }
+  .pray-del:hover { color: var(--tangerine); }
   @media print {
     .tabs, .datebar button, .footer-row, .readbtn, .note, header .sub { display: none !important; }
     body { background: #fff !important; color: #111; }
@@ -337,6 +423,7 @@
   <div class="tabs">
     <button id="tab-daily" class="active" onclick="showTab('daily')">&#9728;&#65039; Morning Study</button>
     <button id="tab-kids" onclick="showTab('kids')">&#129490; Kids Quiz</button>
+    <button id="tab-prayers" onclick="showTab('prayers')">&#128591; Prayers</button>
     <button id="tab-weekly" onclick="showTab('weekly')">&#128149; Couples Study</button>
   </div>
 
@@ -350,6 +437,11 @@
       <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
     </div>
     <div class="card" id="daily-card"></div>
+    <div class="card" id="memory-card"></div>
+  </div>
+
+  <div id="view-prayers" style="display:none">
+    <div class="card" id="prayers-card"></div>
   </div>
 
   <div id="view-kids" style="display:none">
@@ -382,6 +474,8 @@
 <script src="daily.js"></script>
 <script src="weekly.js"></script>
 <script src="kids.js"></script>
+<script src="memory.js"></script>
+<script src="specials.js"></script>
 <script>
 // ---------- Date helpers ----------
 const MS_DAY = 86400000;
@@ -438,11 +532,29 @@ function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch
 function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
 
 function isDone(kind, key) { return !!(load('fbs.done.'+kind) || {})[key]; }
+const MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
+function streakBadge(n) {
+  return n >= 365 ? ' 👑' : n >= 100 ? ' 🥇' : n >= 30 ? ' 🥈' : n >= 7 ? ' 🥉' : '';
+}
 function toggleDone(kind, key) {
   const m = load('fbs.done.'+kind) || {};
   if (m[key]) delete m[key]; else m[key] = true;
   store('fbs.done.'+kind, m);
+  if (kind === 'daily' && m[key] && MILESTONES.includes(dailyStreak())) confetti();
   render();
+}
+function confetti() {
+  const EMO = ['🎉','⭐','✨','🙌','💛'];
+  for (let i = 0; i < 36; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.textContent = EMO[i % EMO.length];
+    el.style.left = (Math.random() * 100) + 'vw';
+    el.style.animationDelay = (Math.random() * 0.5) + 's';
+    el.style.fontSize = (16 + Math.random() * 22) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3400);
+  }
 }
 function dailyStreak() {
   const m = load('fbs.done.daily') || {};
@@ -465,13 +577,15 @@ async function fetchPassage(ref) {
   store(key, text);
   return text;
 }
+const _slotRef = {};
 function verseSlot(id, ref) {
+  _slotRef[id] = ref;
   fetchPassage(ref).then(text => {
     const el = document.getElementById(id);
-    if (el) el.textContent = '“' + text.replace(/\s+/g,' ').trim() + '”';
+    if (el && _slotRef[id] === ref) el.textContent = '“' + text.replace(/\s+/g,' ').trim() + '”';
   }).catch(() => {
     const el = document.getElementById(id);
-    if (el) el.textContent = 'Open your Bible to ' + ref + ' and read it aloud together.';
+    if (el && _slotRef[id] === ref) el.textContent = 'Open your Bible to ' + ref + ' and read it aloud together.';
   });
 }
 let passageCounter = 0;
@@ -494,7 +608,7 @@ function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
 // ---------- Rendering ----------
 function showTab(which) {
-  for (const t of ['daily', 'kids', 'weekly']) {
+  for (const t of ['daily', 'kids', 'prayers', 'weekly']) {
     document.getElementById('view-' + t).style.display = t === which ? '' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', t === which);
   }
@@ -507,8 +621,205 @@ function goThisWeek() { viewWeekOffset = 0; render(); }
 function render() {
   passageCounter = 0;
   renderDaily();
+  renderMemory();
   renderKids();
+  renderPrayers();
   renderWeekly();
+}
+
+// ---------- Holiday specials ----------
+function easterOf(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, month - 1, day);
+}
+function specialFor(d) {
+  const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
+  if (m === 12 && day === 24) return SPECIALS.christmasEve;
+  if (m === 12 && day === 25) return SPECIALS.christmas;
+  if (m === 1 && day === 1) return SPECIALS.newYear;
+  const e = easterOf(y);
+  if (m === e.getMonth() + 1 && day === e.getDate()) return SPECIALS.easter;
+  const gf = new Date(e); gf.setDate(gf.getDate() - 2);
+  if (m === gf.getMonth() + 1 && day === gf.getDate()) return SPECIALS.goodFriday;
+  if (m === 11 && d.getDay() === 4 && day >= 22 && day <= 28) return SPECIALS.thanksgiving;
+  return null;
+}
+
+// ---------- Read aloud ----------
+async function listenDaily() {
+  if (window.speechSynthesis && speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+  const s = window._currentDaily;
+  if (!s || !window.speechSynthesis) return;
+  let verse = '';
+  try { verse = await fetchPassage(s.ref); } catch (e) {}
+  const text = [s.t + '.', verse, s.body, 'Questions to talk about.',
+    ...s.q.map((q, i) => 'Question ' + (i + 1) + '. ' + q),
+    'Morning prayer. ' + s.prayer].join('\n');
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
+
+// ---------- Share verse as image ----------
+async function shareVerse() {
+  const s = window._currentDaily;
+  let verse = '';
+  try { verse = (await fetchPassage(s.ref)).replace(/\s+/g, ' ').trim(); } catch (e) { verse = s.ref; }
+  const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1080;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createLinearGradient(0, 1080, 1080, 0);
+  g.addColorStop(0, '#2c146c'); g.addColorStop(1, '#590083');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1080);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f7cc51'; ctx.font = '70px Georgia';
+  ctx.fillText('✝', 540, 150);
+  ctx.fillStyle = '#ffffff'; ctx.font = 'italic 44px Georgia';
+  let lines = [], line = '';
+  for (const w of ('“' + verse + '”').split(' ')) {
+    const t = line ? line + ' ' + w : w;
+    if (ctx.measureText(t).width > 880) { lines.push(line); line = w; } else line = t;
+  }
+  lines.push(line);
+  if (lines.length > 13) { lines = lines.slice(0, 13); lines[12] += ' …'; }
+  const lh = 62;
+  let y = 560 - (lines.length - 1) * lh / 2;
+  for (const l of lines) { ctx.fillText(l, 540, y); y += lh; }
+  ctx.fillStyle = '#f7cc51'; ctx.font = 'bold 38px Georgia';
+  ctx.fillText('— ' + s.ref, 540, Math.min(y + 26, 970));
+  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '26px Georgia';
+  ctx.fillText('Family Bible Study', 540, 1032);
+  cv.toBlob(async blob => {
+    const file = new File([blob], 'verse.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: s.ref }); return; } catch (e) {}
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'verse.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+}
+
+// ---------- Memory verse of the week ----------
+let memState = { week: null, level: 0, revealed: [] };
+function memHidden(i) {
+  const lv = memState.level;
+  return lv === 3 || (lv === 2 && i % 3 !== 0) || (lv === 1 && i % 3 === 1);
+}
+function memLevel() {
+  memState.level = (memState.level + 1) % 4;
+  memState.revealed = [];
+  renderMemory();
+}
+function memPeek(i) {
+  if (!memState.revealed.includes(i)) memState.revealed.push(i);
+  renderMemory();
+}
+function memGotIt() {
+  const m = load('fbs.mem') || {};
+  m['w' + memState.week] = true;
+  store('fbs.mem', m);
+  confetti();
+  renderMemory();
+}
+function renderMemory() {
+  const wn = weekNum(viewDate);
+  if (memState.week !== wn) memState = { week: wn, level: 0, revealed: [] };
+  const mv = MEMORY[((wn % MEMORY.length) + MEMORY.length) % MEMORY.length];
+  const memorized = !!(load('fbs.mem') || {})['w' + wn];
+  const el = document.getElementById('memory-card');
+  el.innerHTML = `
+    <div class="theme-label">⭐ Memory Verse of the Week</div>
+    <h2>${esc(mv.t)} ${memorized ? '<span class="mem-badge">⭐ Memorized!</span>' : ''}</h2>
+    <div class="body-text readings-note">Practice all week: hide more words each time until you can say it by heart. Tap a hidden word to peek.</div>
+    <div class="mem-words" id="mem-words">Loading verse…</div>
+    <div class="verse-box" style="padding:10px 16px"><span class="ref" style="margin-top:0">— ${esc(mv.ref)} (WEB)</span></div>
+    <div class="mem-controls">
+      <button class="readbtn" onclick="memLevel()">${memState.level === 3 ? 'Show it again' : 'Hide ' + (memState.level === 0 ? 'some' : 'more') + ' words'}</button>
+      ${memorized ? '' : '<button class="complete-btn" onclick="memGotIt()">I can say it! ⭐</button>'}
+    </div>`;
+  window._memRef = mv.ref;
+  fetchPassage(mv.ref).then(t => {
+    if (window._memRef !== mv.ref) return; // a newer week's verse is now showing
+    const words = t.replace(/\s+/g, ' ').trim().split(' ');
+    const box = document.getElementById('mem-words');
+    if (!box) return;
+    box.innerHTML = words.map((w, i) =>
+      memHidden(i) && !memState.revealed.includes(i)
+        ? `<button class="mem-chip veiled" onclick="memPeek(${i})">${esc(w[0])}${'·'.repeat(Math.min(Math.max(w.length - 1, 1), 6))}</button>`
+        : `<span class="mem-chip">${esc(w)}</span>`
+    ).join('');
+  }).catch(() => {
+    const box = document.getElementById('mem-words');
+    if (box) box.textContent = 'Open your Bible to ' + mv.ref + ' — then come practice here when you\'re back online.';
+  });
+}
+
+// ---------- Prayers of the week ----------
+function weeksSince(iso) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (MS_DAY * 7));
+}
+function addPrayer() {
+  const input = document.getElementById('pray-input');
+  const text = (input.value || '').trim();
+  if (!text) return;
+  const prayers = load('fbs.prayers') || [];
+  prayers.push({ id: String(Date.now()), text: text, created: new Date().toISOString(), answered: null });
+  store('fbs.prayers', prayers);
+  renderPrayers();
+}
+function answerPrayer(id) {
+  const prayers = load('fbs.prayers') || [];
+  const p = prayers.find(p => p.id === id);
+  if (p) { p.answered = new Date().toISOString(); store('fbs.prayers', prayers); confetti(); }
+  renderPrayers();
+}
+function removePrayer(id) {
+  if (!confirm('Remove this prayer from the list?')) return;
+  store('fbs.prayers', (load('fbs.prayers') || []).filter(p => p.id !== id));
+  renderPrayers();
+}
+function renderPrayers() {
+  const prayers = load('fbs.prayers') || [];
+  const active = prayers.filter(p => !p.answered);
+  const answered = prayers.filter(p => p.answered).sort((a, b) => b.answered.localeCompare(a.answered));
+  const mon = mondayOf(new Date());
+  const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+  document.getElementById('prayers-card').innerHTML = `
+    <div class="theme-label">🙏 Prayers of the Week</div>
+    <h2>What We're Praying For</h2>
+    <div class="body-text readings-note">Week of ${fmtShort.format(mon)} – ${fmtShort.format(sun)}. Prayers carry over every week until God answers — then check them off and watch the answered list grow.</div>
+    <div class="pray-add">
+      <input id="pray-input" class="pray-input" maxlength="200" placeholder="Add something to pray for…" onkeydown="if(event.key==='Enter')addPrayer()">
+      <button class="complete-btn" onclick="addPrayer()">Add</button>
+    </div>
+    <h3 class="section">Praying this week (${active.length})</h3>
+    ${active.length ? active.map(p => {
+      const w = weeksSince(p.created);
+      return `
+      <div class="pray-item">
+        <div class="pray-text">${esc(p.text)}
+          <div class="pray-meta">praying since ${fmtShort.format(new Date(p.created))}${w >= 1 ? ' · ' + w + ' week' + (w > 1 ? 's' : '') + ' and counting' : ''}</div>
+        </div>
+        <div class="pray-actions">
+          <button class="readbtn" onclick="answerPrayer('${p.id}')">✓ Answered!</button>
+          <button class="pray-del" onclick="removePrayer('${p.id}')" title="Remove">✕</button>
+        </div>
+      </div>`; }).join('') : '<p class="readings-note">Nothing here yet — add your first prayer above.</p>'}
+    <h3 class="section">Answered prayers (${answered.length}) 🎉</h3>
+    ${answered.length ? answered.map(p => `
+      <div class="pray-item">
+        <div class="pray-text">✅ ${esc(p.text)}
+          <div class="pray-meta">asked ${fmtShort.format(new Date(p.created))} → answered ${fmtShort.format(new Date(p.answered))}</div>
+        </div>
+      </div>`).join('') : '<p class="readings-note">Answered prayers collect here — your family\'s story of God\'s faithfulness.</p>'}`;
 }
 
 // ---------- Kids quiz ----------
@@ -527,8 +838,9 @@ function resetQuiz() {
 function renderKids() {
   const d = viewDate;
   const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
-  const theme = DAILY[idx];
-  const k = KIDS[idx % KIDS.length];
+  const sp = specialFor(d);
+  const theme = sp || DAILY[idx];
+  const k = sp ? { quiz: sp.quiz, fun: sp.fun } : KIDS[idx % KIDS.length];
   const answers = load(kidsKey(d)) || {};
   const total = k.quiz.length;
   const answered = Object.keys(answers).length;
@@ -580,14 +892,19 @@ function renderDaily() {
   const d = viewDate;
   const key = dateKey(d);
   const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
-  const s = DAILY[idx];
+  const sp = specialFor(d);
+  const s = sp || DAILY[idx];
+  window._currentDaily = s;
   const r = readingsFor(d);
   const done = isDone('daily', key);
   const streak = dailyStreak();
+  const daysSinceEpoch = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(1970,0,1)) / MS_DAY);
+  const ntPct = Math.round(((daysSinceEpoch % NT_TOTAL) + NT_TOTAL) % NT_TOTAL / NT_TOTAL * 100);
+  const psPct = Math.round(((dayOfYear(d) - 1) % 150) / 150 * 100);
 
   document.getElementById('daily-date').textContent = fmtLong.format(d);
   document.getElementById('daily-card').innerHTML = `
-    <div class="theme-label">Today's Theme</div>
+    <div class="theme-label">${sp ? '✨ ' + esc(sp.label) : "Today's Theme"}</div>
     <h2>${esc(s.t)}</h2>
     <div class="verse-box">
       <span id="daily-verse">Loading verse…</span>
@@ -603,14 +920,20 @@ function renderDaily() {
       <li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; &#127807; Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>
       <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; &#127795; Teens &amp; adults</span></span> ${passageToggle(r.nt)}</li>
     </ul>
+    <div class="progress-row"><span class="progress-label">New Testament journey</span><div class="bar"><div class="fill" style="width:${ntPct}%"></div></div><span class="progress-pct">${ntPct}%</span></div>
+    <div class="progress-row"><span class="progress-label">Psalms journey</span><div class="bar"><div class="fill" style="width:${psPct}%"></div></div><span class="progress-pct">${psPct}%</span></div>
     <h3 class="section">Morning Prayer</h3>
     <p class="prayer">${esc(s.prayer)}</p>
     <div class="footer-row">
       <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('daily','${key}')">
         ${done ? '✓ Completed' : 'Mark Complete'}
       </button>
-      <span class="streak">&#128293; Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}</span>
-      <button class="printbtn" onclick="window.print()">Print</button>
+      <span class="streak">&#128293; Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}${streakBadge(streak)}</span>
+      <span class="toolrow">
+        <button class="readbtn" onclick="listenDaily()">🔊 Listen</button>
+        <button class="readbtn" onclick="shareVerse()">📤 Share</button>
+        <button class="printbtn" onclick="window.print()">Print</button>
+      </span>
     </div>`;
   verseSlot('daily-verse', s.ref);
 }
@@ -654,6 +977,10 @@ function renderWeekly() {
 }
 
 render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
