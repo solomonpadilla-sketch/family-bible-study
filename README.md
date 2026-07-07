@@ -1,6 +1,6 @@
 # Family Bible Study
 
-**Live site:** https://solomonpadilla-sketch.github.io/family-bible-study/
+**Live site:** https://familyscripture.com
 
 An app with two studies:
 
