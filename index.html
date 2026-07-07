@@ -14,16 +14,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Nunito+Sans:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* brand constants (same in both themes) */
+    /* constants — same in both themes */
     --deep: #29093d;
     --lime: #dbe65b;
     --banana: #f7cc51;
     --turquoise: #0ab1b4;
     --tangerine: #e73722;
     --green: #3cb847;
-    /* light theme (default) */
-    --bg1: #ece4f7;
-    --bg2: #faf7ff;
+    --bg1: #2c146c;                       /* page is always the purple gradient */
+    --bg2: #590083;
+    --shadow: 0 10px 34px rgba(12,2,9,0.35);
+    --onbg-soft: #dfa5f7;                 /* elements sitting directly on the purple page */
+    --onbg-chip: rgba(255,255,255,0.06);
+    --onbg-line: rgba(255,255,255,0.16);
+    --onbg-faint: rgba(255,255,255,0.55);
+    /* light theme (default): white cards, dark text inside them */
     --card: #ffffff;
     --ink: #3a2953;
     --heading: #29093d;
@@ -37,11 +42,8 @@
     --sel: rgba(219,230,91,0.5);
     --label: #a8790f;
     --doneink: #71800e;
-    --shadow: 0 10px 34px rgba(60,20,110,0.12);
   }
   body.dark {
-    --bg1: #2c146c;
-    --bg2: #590083;
     --card: rgba(255,255,255,0.07);
     --ink: #ffffff;
     --heading: #ffffff;
@@ -55,7 +57,6 @@
     --sel: rgba(219,230,91,0.16);
     --label: #f7cc51;
     --doneink: #dbe65b;
-    --shadow: 0 10px 34px rgba(12,2,9,0.35);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   .icon {
@@ -82,7 +83,7 @@
     font-family: 'Montserrat', 'Nunito Sans', sans-serif;
     font-size: 1.8rem;
     font-weight: 800;
-    color: var(--heading);
+    color: #fff;
     letter-spacing: 0.3px;
   }
   .theme-toggle {
@@ -93,7 +94,7 @@
   }
   header h1 .cross { color: var(--banana); }
   header .sub {
-    color: var(--soft);
+    color: var(--onbg-soft);
     font-size: 0.9rem;
     margin-top: 6px;
   }
@@ -110,10 +111,10 @@
     font-weight: 700;
     font-size: 0.95rem;
     padding: 11px 22px;
-    border: 2px solid var(--line);
+    border: 2px solid var(--onbg-line);
     border-radius: 100px;
-    background: var(--chip);
-    color: var(--ink);
+    background: var(--onbg-chip);
+    color: #fff;
     cursor: pointer;
     transition: border-color .15s, background .15s;
   }
@@ -132,15 +133,15 @@
     gap: 8px;
   }
   .datebar .when { text-align: center; flex: 1; }
-  .datebar .when .big { font-size: 1.05rem; font-weight: 700; color: var(--heading); }
-  .datebar .when .small { font-size: 0.8rem; color: var(--soft); }
+  .datebar .when .big { font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .datebar .when .small { font-size: 0.8rem; color: var(--onbg-soft); }
   .navbtn {
     font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
-    border: 2px solid var(--line);
-    background: var(--chip);
-    color: var(--ink);
+    border: 2px solid var(--onbg-line);
+    background: var(--onbg-chip);
+    color: #fff;
     border-radius: 100px;
     padding: 6px 16px;
     cursor: pointer;
@@ -330,7 +331,7 @@
   .note {
     text-align: center;
     font-size: 0.75rem;
-    color: var(--faint);
+    color: var(--onbg-faint);
     font-style: italic;
     margin-top: 8px;
   }
@@ -618,7 +619,7 @@ function applyTheme(t) {
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.innerHTML = icon(t === 'dark' ? 'sun' : 'moon');
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = t === 'dark' ? '#49067c' : '#ece4f7';
+  if (meta) meta.content = '#49067c'; // page is always purple
 }
 function toggleTheme() {
   applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
