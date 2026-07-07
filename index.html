@@ -424,7 +424,6 @@
 
   <div class="tabs">
     <button id="tab-daily" class="active" onclick="showTab('daily')">&#9728;&#65039; Morning Study</button>
-    <button id="tab-kids" onclick="showTab('kids')">&#129490; Kids Quiz</button>
     <button id="tab-prayers" onclick="showTab('prayers')">&#128591; Prayers</button>
     <button id="tab-weekly" onclick="showTab('weekly')">&#128149; Couples Study</button>
   </div>
@@ -439,23 +438,12 @@
       <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
     </div>
     <div class="card" id="daily-card"></div>
+    <div class="card" id="kids-card"></div>
     <div class="card" id="memory-card"></div>
   </div>
 
   <div id="view-prayers" style="display:none">
     <div class="card" id="prayers-card"></div>
-  </div>
-
-  <div id="view-kids" style="display:none">
-    <div class="datebar">
-      <button class="navbtn" onclick="moveDay(-1)">&larr;</button>
-      <div class="when">
-        <div class="big" id="kids-date"></div>
-        <div class="small"><button class="navbtn todaybtn" onclick="goToday()">Jump to today</button></div>
-      </div>
-      <button class="navbtn" onclick="moveDay(1)">&rarr;</button>
-    </div>
-    <div class="card" id="kids-card"></div>
   </div>
 
   <div id="view-weekly" style="display:none">
@@ -610,7 +598,7 @@ function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
 // ---------- Rendering ----------
 function showTab(which) {
-  for (const t of ['daily', 'kids', 'prayers', 'weekly']) {
+  for (const t of ['daily', 'prayers', 'weekly']) {
     document.getElementById('view-' + t).style.display = t === which ? '' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', t === which);
   }
@@ -844,19 +832,16 @@ function renderKids() {
   const d = viewDate;
   const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
   const sp = specialFor(d);
-  const theme = sp || DAILY[idx];
   const k = sp ? { quiz: sp.quiz, fun: sp.fun } : KIDS[idx % KIDS.length];
   const answers = load(kidsKey(d)) || {};
   const total = k.quiz.length;
   const answered = Object.keys(answers).length;
   const score = k.quiz.reduce((s, q, i) => s + (answers[i] === q.c ? 1 : 0), 0);
 
-  document.getElementById('kids-date').textContent = fmtLong.format(d);
-
   let html = `
-    <div class="theme-label">Kids Quiz &mdash; Today's Theme</div>
-    <h2>${esc(theme.t)}</h2>
-    <div class="body-text">Listen to the morning study first, then see how many you can get right. Tap your answer!</div>`;
+    <div class="theme-label">&#129490; Kids Quiz</div>
+    <h2>How Well Were You Listening?</h2>
+    <div class="body-text readings-note">Three quick questions about today's study. Tap your answer!</div>`;
 
   k.quiz.forEach((q, qi) => {
     const chosen = answers[qi];

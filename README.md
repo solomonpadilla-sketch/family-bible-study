@@ -5,7 +5,7 @@
 An app with two studies:
 
 - **☀️ Morning Study** — a daily family devotional: theme, key verse, discussion questions, scripture readings, and a morning prayer. 60 devotionals rotate through the year, and the readings are unique every day. Readings are tiered by age, so each reader graduates up as they grow: 🌱 the Proverbs chapter matching the date (little ones, 4–8), 🌿 the Psalm of the day (big kids, 9–12), and 🌳 a New Testament chapter (teens & adults — covers all 260 NT chapters in about 8½ months).
-- **🧒 Kids Quiz** — a daily interactive questionnaire matched to the morning study's theme: three tap-to-answer questions with instant right/wrong feedback and a star score, plus a hands-on fun challenge. Answers save per device; "Try again" resets the day.
+- **🧒 Kids Quiz** — built into the Morning Study page, right below the study: three tap-to-answer questions about the day's theme with instant right/wrong feedback and a star score, plus a hands-on fun challenge. Answers save per device; "Try again" resets the day.
 - **🙏 Prayers of the Week** — add prayer requests; they carry over week to week until answered, then check them off ("Answered! 🎉") and they move into a dated answered-prayer journal.
 - **⭐ Memory Verse of the Week** — 52 kid-friendly classics with a hide-the-words practice game; mark "I can say it!" when memorized.
 - **Also**: streak milestones with confetti (3/7/14/30/50/100/200/365 days + medals), New Testament & Psalms progress bars, 🔊 read-aloud (browser speech), 📤 share today's verse as an image, holiday special studies (Christmas Eve/Day, New Year, Good Friday, Easter, Thanksgiving — with their own kids quizzes), and a service worker for full offline use after the first visit.
