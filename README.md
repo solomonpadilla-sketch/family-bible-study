@@ -4,7 +4,7 @@
 
 An app with two studies:
 
-- **☀️ Morning Study** — a daily family devotional: theme, key verse, discussion questions, scripture readings (a New Testament chapter, the Psalm of the day, and the Proverbs chapter matching the date), and a morning prayer. 60 devotionals rotate through the year, and the readings are unique every day.
+- **☀️ Morning Study** — a daily family devotional: theme, key verse, discussion questions, scripture readings, and a morning prayer. 60 devotionals rotate through the year, and the readings are unique every day. Readings are tiered by age, so each reader graduates up as they grow: 🌱 the Proverbs chapter matching the date (little ones, 4–8), 🌿 the Psalm of the day (big kids, 9–12), and 🌳 a New Testament chapter (teens & adults — covers all 260 NT chapters in about 8½ months).
 - **🧒 Kids Quiz** — a daily interactive questionnaire matched to the morning study's theme: three tap-to-answer questions with instant right/wrong feedback and a star score, plus a hands-on fun challenge. Answers save per device; "Try again" resets the day.
 - **💑 Couples Study** — one marriage-focused study per week, 52 in all (a full year): a passage to read together, five discussion questions, a practical "this week's practice," and a prayer.
 
