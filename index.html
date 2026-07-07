@@ -14,18 +14,48 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Nunito+Sans:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg1: #2c146c;
-    --bg2: #590083;
+    /* brand constants (same in both themes) */
     --deep: #29093d;
-    --card: rgba(255,255,255,0.07);
-    --ink: #ffffff;
-    --soft: #dfa5f7;
     --lime: #dbe65b;
     --banana: #f7cc51;
     --turquoise: #0ab1b4;
     --tangerine: #e73722;
     --green: #3cb847;
+    /* light theme (default) */
+    --bg1: #ece4f7;
+    --bg2: #faf7ff;
+    --card: #ffffff;
+    --ink: #3a2953;
+    --heading: #29093d;
+    --soft: #7a5da3;
+    --faint: rgba(41,9,61,0.45);
+    --line: rgba(41,9,61,0.14);
+    --chip: rgba(41,9,61,0.05);
+    --panel: rgba(41,9,61,0.06);
+    --toolbar: rgba(255,255,255,0.97);
+    --track: rgba(41,9,61,0.12);
+    --sel: rgba(219,230,91,0.5);
+    --label: #a8790f;
+    --doneink: #71800e;
+    --shadow: 0 10px 34px rgba(60,20,110,0.12);
+  }
+  body.dark {
+    --bg1: #2c146c;
+    --bg2: #590083;
+    --card: rgba(255,255,255,0.07);
+    --ink: #ffffff;
+    --heading: #ffffff;
+    --soft: #dfa5f7;
+    --faint: rgba(255,255,255,0.5);
     --line: rgba(255,255,255,0.16);
+    --chip: rgba(255,255,255,0.07);
+    --panel: rgba(12,2,9,0.3);
+    --toolbar: rgba(31,9,56,0.96);
+    --track: rgba(255,255,255,0.12);
+    --sel: rgba(219,230,91,0.16);
+    --label: #f7cc51;
+    --doneink: #dbe65b;
+    --shadow: 0 10px 34px rgba(12,2,9,0.35);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   .icon {
@@ -47,12 +77,19 @@
     text-align: center;
     padding: 34px 16px 18px;
   }
+  header { position: relative; }
   header h1 {
     font-family: 'Montserrat', 'Nunito Sans', sans-serif;
     font-size: 1.8rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--heading);
     letter-spacing: 0.3px;
+  }
+  .theme-toggle {
+    position: absolute;
+    top: 14px;
+    right: 12px;
+    padding: 7px 11px;
   }
   header h1 .cross { color: var(--banana); }
   header .sub {
@@ -75,8 +112,8 @@
     padding: 11px 22px;
     border: 2px solid var(--line);
     border-radius: 100px;
-    background: rgba(255,255,255,0.06);
-    color: #fff;
+    background: var(--chip);
+    color: var(--ink);
     cursor: pointer;
     transition: border-color .15s, background .15s;
   }
@@ -95,15 +132,15 @@
     gap: 8px;
   }
   .datebar .when { text-align: center; flex: 1; }
-  .datebar .when .big { font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .datebar .when .big { font-size: 1.05rem; font-weight: 700; color: var(--heading); }
   .datebar .when .small { font-size: 0.8rem; color: var(--soft); }
   .navbtn {
     font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
     border: 2px solid var(--line);
-    background: rgba(255,255,255,0.06);
-    color: #fff;
+    background: var(--chip);
+    color: var(--ink);
     border-radius: 100px;
     padding: 6px 16px;
     cursor: pointer;
@@ -117,7 +154,7 @@
     border: 1px solid var(--line);
     border-radius: 24px;
     padding: 28px 26px 24px;
-    box-shadow: 0 10px 34px rgba(12,2,9,0.35);
+    box-shadow: var(--shadow);
     margin-bottom: 18px;
   }
   .theme-label {
@@ -125,22 +162,23 @@
     letter-spacing: 2px;
     font-size: 0.72rem;
     font-weight: 800;
-    color: var(--banana);
+    color: var(--label);
     margin-bottom: 4px;
   }
   .card h2 {
     font-family: 'Montserrat', 'Nunito Sans', sans-serif;
     font-size: 1.5rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--heading);
     margin-bottom: 14px;
   }
   .verse-box {
-    background: linear-gradient(135deg, rgba(121,86,236,0.9), rgba(47,185,248,0.9));
+    background: linear-gradient(135deg, rgba(121,86,236,0.95), rgba(47,185,248,0.95));
     border-radius: 18px;
     padding: 18px 20px;
     margin: 14px 0;
     font-style: italic;
+    color: #fff;
   }
   .verse-box .ref {
     display: block;
@@ -191,17 +229,17 @@
     font-weight: 700;
     border: 2px solid var(--turquoise);
     background: none;
-    color: #fff;
+    color: var(--ink);
     border-radius: 100px;
     padding: 4px 14px;
     cursor: pointer;
     transition: background .15s;
   }
-  .readbtn:hover { background: var(--turquoise); color: var(--deep); }
+  .readbtn:hover { background: var(--turquoise); color: #fff; }
   .passage-text {
     display: none;
     width: 100%;
-    background: rgba(12,2,9,0.3);
+    background: var(--panel);
     border-radius: 14px;
     padding: 12px 14px;
     margin-top: 8px;
@@ -217,7 +255,7 @@
     margin-bottom: 8px;
     position: sticky;
     top: -12px;
-    background: rgba(31,9,56,0.96);
+    background: var(--toolbar);
     border-radius: 10px;
     padding: 8px 10px;
   }
@@ -231,13 +269,13 @@
     margin-bottom: 2px;
     line-height: 1.55;
   }
-  .pt-verse:hover { background: rgba(255,255,255,0.06); }
+  .pt-verse:hover { background: var(--chip); }
   .pt-verse.sel {
-    background: rgba(219,230,91,0.16);
+    background: var(--sel);
     box-shadow: inset 3px 0 0 var(--lime);
   }
   .vnum {
-    color: var(--banana);
+    color: var(--label);
     font-size: 0.68rem;
     vertical-align: super;
     margin-right: 5px;
@@ -273,13 +311,13 @@
   }
   .complete-btn.done {
     background: transparent;
-    color: var(--lime);
+    color: var(--doneink);
   }
   .streak {
     font-size: 0.85rem;
     color: var(--soft);
   }
-  .streak b { color: var(--banana); }
+  .streak b { color: var(--label); }
   .printbtn {
     font-family: inherit;
     font-size: 0.8rem;
@@ -292,7 +330,7 @@
   .note {
     text-align: center;
     font-size: 0.75rem;
-    color: rgba(255,255,255,0.55);
+    color: var(--faint);
     font-style: italic;
     margin-top: 8px;
   }
@@ -318,8 +356,8 @@
     padding: 11px 16px;
     border: 2px solid var(--line);
     border-radius: 14px;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    background: var(--chip);
+    color: var(--ink);
     cursor: pointer;
     transition: border-color .15s;
   }
@@ -345,7 +383,7 @@
     margin-top: 8px;
     border: 2px solid var(--line);
     background: none;
-    color: #fff;
+    color: var(--ink);
     border-radius: 100px;
     padding: 5px 16px;
     cursor: pointer;
@@ -375,7 +413,7 @@
     flex: 1;
     height: 8px;
     border-radius: 100px;
-    background: rgba(255,255,255,0.12);
+    background: var(--track);
     overflow: hidden;
   }
   .progress-row .fill {
@@ -390,21 +428,21 @@
     margin: 2px;
     padding: 5px 10px;
     border-radius: 10px;
-    background: rgba(255,255,255,0.1);
+    background: var(--chip);
     border: none;
-    color: #fff;
+    color: var(--ink);
     font-family: inherit;
     font-size: 0.95rem;
   }
   .mem-chip.veiled {
-    background: rgba(12,2,9,0.4);
+    background: var(--panel);
     color: var(--soft);
     cursor: pointer;
     letter-spacing: 1px;
     border: 1px dashed var(--line);
   }
   .mem-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-  .mem-badge { font-size: 0.85rem; color: var(--banana); font-family: 'Nunito Sans', sans-serif; font-weight: 700; }
+  .mem-badge { font-size: 0.85rem; color: var(--label); font-family: 'Nunito Sans', sans-serif; font-weight: 700; }
   .pray-add { display: flex; gap: 8px; margin: 12px 0 8px; }
   .pray-input {
     flex: 1;
@@ -413,11 +451,11 @@
     padding: 11px 18px;
     border-radius: 100px;
     border: 2px solid var(--line);
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    background: var(--chip);
+    color: var(--ink);
     outline: none;
   }
-  .pray-input::placeholder { color: rgba(255,255,255,0.45); }
+  .pray-input::placeholder { color: var(--faint); }
   .pray-input:focus { border-color: var(--lime); }
   .pray-item {
     display: flex;
@@ -432,7 +470,7 @@
   .pray-del {
     background: none;
     border: none;
-    color: rgba(255,255,255,0.45);
+    color: var(--faint);
     cursor: pointer;
     font-size: 1rem;
     padding: 4px 8px;
@@ -459,6 +497,7 @@
 <body>
 <div class="wrap">
   <header>
+    <button id="theme-toggle" class="navbtn theme-toggle" onclick="toggleTheme()" title="Switch light/dark mode" aria-label="Switch light/dark mode"></button>
     <h1><span class="cross"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2.5h4V9h6.5v4H14v8.5h-4V13H3.5V9H10z"/></svg></span> Family Bible Study</h1>
     <div class="sub">"Your word is a lamp to my feet, and a light for my path." &mdash; Psalm 119:105</div>
   </header>
@@ -565,11 +604,24 @@ function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) 
 function isDone(kind, key) { return !!(load('fbs.done.'+kind) || {})[key]; }
 const MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
 function streakBadge(n) {
-  if (n >= 365) return ' <span style="color:#f7cc51">' + icon('crown', 'fill:currentColor') + '</span>';
-  if (n >= 100) return ' <span style="color:#ffd766">' + icon('award') + '</span>';
-  if (n >= 30) return ' <span style="color:#c9ced6">' + icon('award') + '</span>';
-  if (n >= 7) return ' <span style="color:#d08a4e">' + icon('award') + '</span>';
+  if (n >= 365) return ' <span style="color:var(--label)">' + icon('crown', 'fill:currentColor') + '</span>';
+  if (n >= 100) return ' <span style="color:#d4a017">' + icon('award') + '</span>';
+  if (n >= 30) return ' <span style="color:#8f98a3">' + icon('award') + '</span>';
+  if (n >= 7) return ' <span style="color:#b06c28">' + icon('award') + '</span>';
   return '';
+}
+
+// ---------- Theme ----------
+function applyTheme(t) {
+  document.body.classList.toggle('dark', t === 'dark');
+  store('fbs.theme', t);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = icon(t === 'dark' ? 'sun' : 'moon');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'dark' ? '#49067c' : '#ece4f7';
+}
+function toggleTheme() {
+  applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
 }
 function toggleDone(kind, key) {
   const m = load('fbs.done.'+kind) || {};
@@ -746,7 +798,8 @@ const ICONS = {
   tree: '<path d="M12 3 7 10h2.5L5 16h14l-4.5-6H17z"/><path d="M12 16v5"/>',
   target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/>',
-  alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>'
+  alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
+  moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
 };
 function icon(name, style) {
   return '<svg class="icon"' + (style ? ' style="' + style + '"' : '') +
@@ -965,7 +1018,7 @@ function renderPrayers() {
           <button class="pray-del" onclick="removePrayer('${p.id}')" title="Remove">${icon('x')}</button>
         </div>
       </div>`; }).join('') : '<p class="readings-note">Nothing here yet — add your first prayer above.</p>'}
-    <h3 class="section">Answered prayers (${answered.length}) ${icon('sparkle', 'color:var(--banana)')}</h3>
+    <h3 class="section">Answered prayers (${answered.length}) ${icon('sparkle', 'color:var(--label)')}</h3>
     ${answered.length ? answered.map(p => `
       <div class="pray-item">
         <div class="pray-text"><span style="color:var(--green)">${icon('checkCircle')}</span> ${esc(p.text)}
@@ -1019,7 +1072,7 @@ function renderKids() {
 
   if (answered === total) {
     const stars = Array.from({ length: total }, (_, i) =>
-      icon('star', i < score ? 'color:#f7cc51;fill:#f7cc51' : 'color:rgba(255,255,255,0.35)')
+      icon('star', i < score ? 'color:#e5a812;fill:#f7cc51' : 'color:var(--faint)')
     ).join(' ');
     const cheer = score === total ? 'Perfect! You were really listening!' :
                   score >= total - 1 ? 'Great job — so close to perfect!' :
@@ -1034,7 +1087,7 @@ function renderKids() {
 
   html += `
     <h3 class="section">Fun Challenge</h3>
-    <div class="activity">${icon('target', 'color:var(--banana)')} ${esc(k.fun)}</div>`;
+    <div class="activity">${icon('target', 'color:var(--label)')} ${esc(k.fun)}</div>`;
 
   document.getElementById('kids-card').innerHTML = html;
 }
@@ -1127,6 +1180,7 @@ function renderWeekly() {
   verseSlot('weekly-verse', s.ref);
 }
 
+applyTheme(load('fbs.theme') || 'light');
 render();
 
 if ('serviceWorker' in navigator) {
