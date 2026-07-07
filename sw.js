@@ -1,10 +1,15 @@
 // Offline support: precache the app shell, then stale-while-revalidate for same-origin + Google Fonts.
-const CACHE = 'fbs-v1';
+const CACHE = 'fbs-v3';
 const ASSETS = ['./', 'index.html', 'daily.js', 'weekly.js', 'kids.js', 'memory.js', 'specials.js',
   'manifest.json', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache:'reload' bypasses the HTTP cache so a new SW never precaches stale files
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -24,7 +29,8 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.open(CACHE).then(async c => {
       const cached = await c.match(e.request);
-      const fresh = fetch(e.request).then(res => {
+      // cache:'no-cache' revalidates with the server so background updates are never HTTP-cache-stale
+      const fresh = fetch(e.request, { cache: 'no-cache' }).then(res => {
         if (res && res.ok) c.put(e.request, res.clone());
         return res;
       }).catch(() => cached);

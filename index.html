@@ -398,7 +398,9 @@
   }
   .pray-del:hover { color: var(--tangerine); }
   @media print {
-    .tabs, .datebar button, .footer-row, .readbtn, .note, header .sub { display: none !important; }
+    .tabs, .datebar button, .footer-row, .readbtn, .note, header .sub,
+    .pray-add, .pray-actions, .mem-controls, .progress-row, .retry-btn { display: none !important; }
+    .pray-item, .pray-meta, .mem-chip { color: #111 !important; background: none; }
     body { background: #fff !important; color: #111; }
     header h1, .card h2, .quiz-q, .datebar .when .big { color: #111; }
     header h1 .cross, .theme-label, .verse-box .ref { color: #7a5b1e; }
@@ -652,10 +654,13 @@ function specialFor(d) {
 }
 
 // ---------- Read aloud ----------
+let _listenPending = false;
 async function listenDaily() {
   if (window.speechSynthesis && speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
   const s = window._currentDaily;
-  if (!s || !window.speechSynthesis) return;
+  if (!s || !window.speechSynthesis || _listenPending) return;
+  _listenPending = true;
+  setTimeout(() => { _listenPending = false; }, 1500);
   let verse = '';
   try { verse = await fetchPassage(s.ref); } catch (e) {}
   const text = [s.t + '.', verse, s.body, 'Questions to talk about.',
