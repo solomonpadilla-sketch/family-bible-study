@@ -129,7 +129,86 @@
     transition: all .2s;
   }
   .theme-toggle:hover { background: var(--chip); }
+  .hdr-actions { display: flex; gap: 8px; flex: none; }
   .hdr-div { height: 1px; background: var(--line); margin: 18px 0; }
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 18, 12, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 16px;
+  }
+  .settings-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px 24px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .settings-head { display: flex; justify-content: space-between; align-items: center; }
+  .settings-head h2 {
+    font-family: 'Newsreader', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--heading);
+    margin: 0;
+  }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .seg button {
+    font-family: 'Mulish', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .seg button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .settings-select {
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    width: 100%;
+  }
+  .age-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .age-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 14px;
+    border-radius: 100px;
+    background: var(--sel);
+    border: 1px solid var(--accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .age-chip button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--soft);
+    display: flex;
+    padding: 2px;
+  }
+  .age-chip button:hover { color: var(--wrong); }
   .hdr-bottom { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -554,7 +633,10 @@
           <p class="sub">&ldquo;Your word is a lamp to my feet, and a light for my path.&rdquo; &mdash; Psalm 119:105</p>
         </div>
       </div>
-      <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Switch light/dark mode" aria-label="Switch light/dark mode"></button>
+      <div class="hdr-actions">
+        <button class="theme-toggle" onclick="openSettings()" title="Settings" aria-label="Settings"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></button>
+        <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Switch light/dark mode" aria-label="Switch light/dark mode"></button>
+      </div>
     </div>
     <div class="hdr-div"></div>
     <div class="hdr-bottom">
@@ -586,7 +668,41 @@
     <div class="card" id="weekly-card"></div>
   </div>
 
-  <div class="note">Scripture text: World English Bible (public domain). Verses load when online and are saved for offline use.</div>
+  <div class="note">Scripture verses load when online and are saved for offline use. Change translation, font size, and kids' ages in Settings.</div>
+
+  <div id="settings-overlay" class="settings-overlay" style="display:none" onclick="if (event.target === this) closeSettings()">
+    <div class="settings-card" role="dialog" aria-label="Settings">
+      <div class="settings-head">
+        <h2>Settings</h2>
+        <button class="pray-del" onclick="closeSettings()" aria-label="Close settings"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <h3 class="section">Appearance</h3>
+      <div class="seg" id="set-theme">
+        <button data-v="light" onclick="setThemeChoice('light')">Light</button>
+        <button data-v="dark" onclick="setThemeChoice('dark')">Dark</button>
+      </div>
+      <h3 class="section">Font size</h3>
+      <div class="seg" id="set-font">
+        <button data-v="small" onclick="setFontSize('small')">Small</button>
+        <button data-v="medium" onclick="setFontSize('medium')">Medium</button>
+        <button data-v="large" onclick="setFontSize('large')">Large</button>
+      </div>
+      <h3 class="section">Bible translation</h3>
+      <select id="set-trans" class="settings-select" onchange="setTranslation(this.value)">
+        <option value="web">WEB — World English Bible (modern)</option>
+        <option value="kjv">KJV — King James Version (classic)</option>
+        <option value="bbe">BBE — Bible in Basic English (simplest)</option>
+        <option value="asv">ASV — American Standard Version</option>
+      </select>
+      <h3 class="section">Kids' ages</h3>
+      <p class="readings-note">Tailors the daily readings — little ones (8 &amp; under) get kid-safe Bible stories, and only the age groups in your family are shown.</p>
+      <div class="age-chips" id="age-chips"></div>
+      <div class="pray-add">
+        <input id="age-input" class="pray-input" type="number" min="1" max="17" placeholder="Add a child's age…" onkeydown="if(event.key==='Enter')addAge()">
+        <button class="complete-btn" onclick="addAge()">Add</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="daily.js"></script>
@@ -595,6 +711,56 @@
 <script src="memory.js"></script>
 <script src="specials.js"></script>
 <script>
+// ---------- Settings ----------
+const DEFAULT_SETTINGS = { translation: 'web', fontSize: 'medium', ages: [] };
+let SETTINGS = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem('fbs.settings') || 'null') || {});
+const TRANSLATIONS = {
+  web: 'WEB', kjv: 'KJV', bbe: 'BBE', asv: 'ASV'
+};
+const FONT_SIZES = { small: '14.5px', medium: '16px', large: '18px' };
+function transLabel() { return TRANSLATIONS[SETTINGS.translation] || 'WEB'; }
+function saveSettings() { try { localStorage.setItem('fbs.settings', JSON.stringify(SETTINGS)); } catch (e) {} }
+function applySettings() {
+  document.documentElement.style.fontSize = FONT_SIZES[SETTINGS.fontSize] || '16px';
+}
+
+// Kid-safe Bible story rotation for little ones (replaces Proverbs-by-date,
+// which includes chapters that aren't appropriate for young children)
+const KIDSAFE = [
+{t:"God Makes the World",ref:"Genesis 1:1-10"},
+{t:"God Makes the Animals",ref:"Genesis 1:20-25"},
+{t:"Noah Builds the Ark",ref:"Genesis 6:14-22"},
+{t:"The Dove and the Olive Leaf",ref:"Genesis 8:6-12"},
+{t:"God's Rainbow Promise",ref:"Genesis 9:12-16"},
+{t:"Baby Moses in the Basket",ref:"Exodus 2:1-10"},
+{t:"God Parts the Sea",ref:"Exodus 14:21-22"},
+{t:"Bread from Heaven",ref:"Exodus 16:11-18"},
+{t:"The Walls of Jericho Fall",ref:"Joshua 6:15-20"},
+{t:"Samuel Hears God's Voice",ref:"1 Samuel 3:1-10"},
+{t:"David and the Giant",ref:"1 Samuel 17:45-50"},
+{t:"The Jar That Never Ran Out",ref:"1 Kings 17:8-16"},
+{t:"Naaman Washes in the River",ref:"2 Kings 5:9-14"},
+{t:"Daniel and His Vegetables",ref:"Daniel 1:8-15"},
+{t:"Safe in the Fiery Furnace",ref:"Daniel 3:19-27"},
+{t:"Daniel in the Lions' Den",ref:"Daniel 6:16-23"},
+{t:"Jonah and the Big Fish",ref:"Jonah 1:15-17"},
+{t:"The Lord Is My Shepherd",ref:"Psalms 23"},
+{t:"Shout for Joy!",ref:"Psalms 100"},
+{t:"God Watches Over You",ref:"Psalms 121"},
+{t:"Wonderfully Made",ref:"Psalms 139:13-14"},
+{t:"The Wise Men Visit Jesus",ref:"Matthew 2:1-11"},
+{t:"The First Christmas Night",ref:"Luke 2:4-14"},
+{t:"Jesus Feeds Five Thousand",ref:"Matthew 14:13-21"},
+{t:"Jesus Loves the Children",ref:"Matthew 19:13-15"},
+{t:"Jesus Calms the Storm",ref:"Mark 4:35-41"},
+{t:"Jesus Heals a Blind Man",ref:"Mark 10:46-52"},
+{t:"The Lost Sheep",ref:"Luke 15:3-7"},
+{t:"The Good Samaritan",ref:"Luke 10:30-37"},
+{t:"Zacchaeus Climbs a Tree",ref:"Luke 19:1-10"},
+{t:"The Empty Tomb",ref:"Matthew 28:1-8"},
+{t:"Breakfast on the Beach",ref:"John 21:4-13"}
+];
+
 // ---------- Date helpers ----------
 const MS_DAY = 86400000;
 let viewDate = new Date();           // date shown on the daily tab
@@ -671,6 +837,58 @@ function applyTheme(t) {
 function toggleTheme() {
   applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
 }
+
+// ---------- Settings panel ----------
+function openSettings() {
+  renderSettingsPanel();
+  document.getElementById('settings-overlay').style.display = 'flex';
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').style.display = 'none';
+}
+function renderSettingsPanel() {
+  const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+  document.querySelectorAll('#set-theme button').forEach(b => b.classList.toggle('active', b.dataset.v === theme));
+  document.querySelectorAll('#set-font button').forEach(b => b.classList.toggle('active', b.dataset.v === SETTINGS.fontSize));
+  document.getElementById('set-trans').value = SETTINGS.translation;
+  document.getElementById('age-chips').innerHTML = SETTINGS.ages.length
+    ? SETTINGS.ages.map((a, i) =>
+        `<span class="age-chip">${a}<button onclick="removeAge(${i})" aria-label="Remove age ${a}">${icon('x')}</button></span>`
+      ).join('')
+    : '<span class="readings-note">No ages added yet — all age groups are shown.</span>';
+}
+function setThemeChoice(t) {
+  applyTheme(t);
+  renderSettingsPanel();
+}
+function setFontSize(s) {
+  SETTINGS.fontSize = s;
+  saveSettings();
+  applySettings();
+  renderSettingsPanel();
+}
+function setTranslation(t) {
+  SETTINGS.translation = t;
+  saveSettings();
+  render();
+}
+function addAge() {
+  const input = document.getElementById('age-input');
+  const v = parseInt(input.value, 10);
+  if (!v || v < 1 || v > 17) return;
+  SETTINGS.ages.push(v);
+  SETTINGS.ages.sort((a, b) => a - b);
+  saveSettings();
+  input.value = '';
+  render();
+  renderSettingsPanel();
+}
+function removeAge(i) {
+  SETTINGS.ages.splice(i, 1);
+  saveSettings();
+  render();
+  renderSettingsPanel();
+}
 function toggleDone(kind, key) {
   const m = load('fbs.done.'+kind) || {};
   if (m[key]) delete m[key]; else m[key] = true;
@@ -709,11 +927,15 @@ function dailyStreak() {
 }
 
 // ---------- Scripture fetching (WEB translation, cached) ----------
+function verseKey(prefix, ref) {
+  const t = SETTINGS.translation;
+  return prefix + (t === 'web' ? '' : t + '.') + ref;
+}
 async function fetchPassage(ref) {
-  const key = 'fbs.verse.' + ref;
+  const key = verseKey('fbs.verse.', ref);
   const cached = load(key);
   if (cached) return cached;
-  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=web');
+  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=' + SETTINGS.translation);
   if (!res.ok) throw new Error('fetch failed');
   const data = await res.json();
   const text = (data.text || '').trim().replace(/\n{2,}/g, '\n');
@@ -722,13 +944,14 @@ async function fetchPassage(ref) {
 }
 const _slotRef = {};
 function verseSlot(id, ref) {
-  _slotRef[id] = ref;
+  const token = SETTINGS.translation + '|' + ref;
+  _slotRef[id] = token;
   fetchPassage(ref).then(text => {
     const el = document.getElementById(id);
-    if (el && _slotRef[id] === ref) el.textContent = '“' + text.replace(/\s+/g,' ').trim() + '”';
+    if (el && _slotRef[id] === token) el.textContent = '“' + text.replace(/\s+/g,' ').trim() + '”';
   }).catch(() => {
     const el = document.getElementById(id);
-    if (el && _slotRef[id] === ref) el.textContent = 'Open your Bible to ' + ref + ' and read it aloud together.';
+    if (el && _slotRef[id] === token) el.textContent = 'Open your Bible to ' + ref + ' and read it aloud together.';
   });
 }
 let passageCounter = 0;
@@ -738,16 +961,16 @@ function passageToggle(ref) {
           <div class="passage-text" id="${pid}"></div>`;
 }
 async function fetchVerses(ref) {
-  const key = 'fbs.vv.' + ref;
+  const key = verseKey('fbs.vv.', ref);
   const cached = load(key);
   if (cached) return cached;
-  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=web');
+  const res = await fetch('https://bible-api.com/' + encodeURIComponent(ref) + '?translation=' + SETTINGS.translation);
   if (!res.ok) throw new Error('fetch failed');
   const data = await res.json();
   const verses = (data.verses || []).map(v => ({ c: v.chapter, v: v.verse, t: (v.text || '').replace(/\s+/g, ' ').trim() }));
   if (!verses.length) throw new Error('no verses');
   store(key, verses);
-  if (!load('fbs.verse.' + ref)) store('fbs.verse.' + ref, (data.text || '').trim().replace(/\n{2,}/g, '\n'));
+  if (!load(verseKey('fbs.verse.', ref))) store(verseKey('fbs.verse.', ref), (data.text || '').trim().replace(/\n{2,}/g, '\n'));
   return verses;
 }
 const _pverses = {}, _psel = {}, _pref = {};
@@ -805,7 +1028,7 @@ async function sharePassage(pid) {
   const book = ref.replace(/\s+\d.*$/, '');
   const label = book + ' ' + verseRangeLabel(verses, sel);
   const body = [...sel].sort((a, b) => a - b).map(i => verses[i].v + ' ' + verses[i].t).join('\n');
-  const text = label + ' (WEB)\n\n' + body + '\n\n— Family Bible Study';
+  const text = label + ' (' + transLabel() + ')\n\n' + body + '\n\n— Family Bible Study';
   if (navigator.share) {
     try { await navigator.share({ text: text, title: label }); return; } catch (e) { if (e.name === 'AbortError') return; }
   }
@@ -1023,14 +1246,15 @@ function renderMemory() {
     <h2>${esc(mv.t)} ${memorized ? '<span class="mem-badge">' + icon('star', 'fill:currentColor') + ' Memorized!</span>' : ''}</h2>
     <div class="body-text readings-note">Practice all week: hide more words each time until you can say it by heart. Tap a hidden word to peek.</div>
     <div class="mem-words" id="mem-words">Loading verse…</div>
-    <div class="verse-box" style="padding:10px 16px"><span class="ref" style="margin-top:0">— ${esc(mv.ref)} (WEB)</span></div>
+    <div class="verse-box" style="padding:10px 16px"><span class="ref" style="margin-top:0">— ${esc(mv.ref)} (${transLabel()})</span></div>
     <div class="mem-controls">
       <button class="readbtn" onclick="memLevel()">${memState.level === 3 ? 'Show it again' : 'Hide ' + (memState.level === 0 ? 'some' : 'more') + ' words'}</button>
       ${memorized ? '' : '<button class="complete-btn" onclick="memGotIt()">I can say it! ' + icon('star', 'fill:currentColor') + '</button>'}
     </div>`;
-  window._memRef = mv.ref;
+  window._memRef = SETTINGS.translation + '|' + mv.ref;
+  const memToken = window._memRef;
   fetchPassage(mv.ref).then(t => {
-    if (window._memRef !== mv.ref) return; // a newer week's verse is now showing
+    if (window._memRef !== memToken) return; // a newer week's verse is now showing
     const words = t.replace(/\s+/g, ' ').trim().split(' ');
     const box = document.getElementById('mem-words');
     if (!box) return;
@@ -1183,23 +1407,30 @@ function renderDaily() {
   const daysSinceEpoch = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(1970,0,1)) / MS_DAY);
   const ntPct = Math.round(((daysSinceEpoch % NT_TOTAL) + NT_TOTAL) % NT_TOTAL / NT_TOTAL * 100);
   const psPct = Math.round(((dayOfYear(d) - 1) % 150) / 150 * 100);
+  const hasAges = SETTINGS.ages.length > 0;
+  const showLittle = !hasAges || SETTINGS.ages.some(a => a <= 8);
+  const showBig = !hasAges || SETTINGS.ages.some(a => a >= 9 && a <= 12);
+  const kid = KIDSAFE[(dayOfYear(d) - 1) % KIDSAFE.length];
 
   document.getElementById('daily-card').innerHTML = `
     <div class="theme-label">${sp ? icon('sparkle') + ' ' + esc(sp.label) : "Today's Theme"}</div>
     <h2>${esc(s.t)}</h2>
     <div class="verse-box">
       <span id="daily-verse">Loading verse…</span>
-      <span class="ref">&mdash; ${esc(s.ref)} (WEB)</span>
+      <span class="ref">&mdash; ${esc(s.ref)} (${transLabel()})</span>
     </div>
     <div class="body-text">${esc(s.body)}</div>
     <h3 class="section">Talk About It Together</h3>
     <ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
     <h3 class="section">Today's Readings</h3>
-    <p class="readings-note">One reading per age &mdash; each reader graduates to the next as they grow.</p>
+    <p class="readings-note">${SETTINGS.ages.length
+      ? 'Matched to your kids’ ages (' + SETTINGS.ages.join(', ') + ') — change them in Settings.'
+      : 'One reading per age — set your kids’ ages in Settings to tailor these.'}</p>
     <ul class="readings">
-      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8)</span></span> ${passageToggle(r.proverbs)}</li>
-      <li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>
+      ${showLittle ? `<li><span><b>${esc(kid.ref)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8) &middot; ${esc(kid.t)}</span></span> ${passageToggle(kid.ref)}</li>` : ''}
+      ${showBig ? `<li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>` : ''}
       <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(r.nt)}</li>
+      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; ${icon('tree')} Proverb of the day (teens &amp; adults)</span></span> ${passageToggle(r.proverbs)}</li>
     </ul>
     <div class="progress-row"><span class="progress-label">New Testament journey</span><div class="bar"><div class="fill" style="width:${ntPct}%"></div></div><span class="progress-pct">${ntPct}%</span></div>
     <div class="progress-row"><span class="progress-label">Psalms journey</span><div class="bar"><div class="fill" style="width:${psPct}%"></div></div><span class="progress-pct">${psPct}%</span></div>
@@ -1234,7 +1465,7 @@ function renderWeekly() {
     <h2>${esc(s.t)}</h2>
     <div class="verse-box">
       <span id="weekly-verse">Loading passage…</span>
-      <span class="ref">&mdash; ${esc(s.ref)} (WEB)</span>
+      <span class="ref">&mdash; ${esc(s.ref)} (${transLabel()})</span>
     </div>
     <div class="body-text">${esc(s.intro)}</div>
     <h3 class="section">Read Together</h3>
@@ -1257,6 +1488,7 @@ function renderWeekly() {
 }
 
 applyTheme(load('fbs.theme') || 'light');
+applySettings();
 render();
 
 if ('serviceWorker' in navigator) {

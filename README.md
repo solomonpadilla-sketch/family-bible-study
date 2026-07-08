@@ -16,7 +16,8 @@ An app with two studies:
 Open `index.html` in any browser — double-click it, or serve the folder. Everyone in the family sees the same study on the same day (it's computed from the date, no server needed).
 
 - Verse text comes from the **World English Bible** (public domain) via bible-api.com when online, and is cached in the browser for offline use afterward.
-- **Light & dark mode** — light by default, with a sun/moon toggle in the top-right corner. The choice is remembered per device.
+- **Light & dark mode** — light by default, with a sun/moon toggle in the header. The choice is remembered per device.
+- **⚙️ Settings** (sliders icon in the header) — theme, font size (small/medium/large), Bible translation (WEB, KJV, BBE — simplest English, ASV), and **kids' ages**: little ones (8 & under) get a kid-safe Bible story rotation instead of the Proverbs chapter of the day (some Proverbs chapters aren't young-kid appropriate), and only your family's age groups are shown in the readings. Proverbs-of-the-day moved to the teens & adults tier. All settings are per device.
 - **Show text** panels display numbered verses in a scrollable box — tap verses to select them, then **Share** sends just that section (share sheet on phones, clipboard on desktop) with a smart reference like "Psalms 37:3-5,8".
 - **Mark Complete** tracks a daily streak per device (stored in localStorage).
 - Arrow buttons browse past/future days and weeks; **Print** gives a clean paper copy.
