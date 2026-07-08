@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Family Bible Study</title>
+<title>Family Scripture</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -629,7 +629,7 @@
       <div class="hdr-brand">
         <span class="hdr-tile"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a1 1 0 0 1 1 1v17l-6-3.2L6 21z"/><path d="M12 7v6M9.5 9.6h5"/></svg></span>
         <div>
-          <h1>Family Bible Study</h1>
+          <h1>Family Scripture</h1>
           <p class="sub">&ldquo;Your word is a lamp to my feet, and a light for my path.&rdquo; &mdash; Psalm 119:105</p>
         </div>
       </div>
@@ -1028,7 +1028,7 @@ async function sharePassage(pid) {
   const book = ref.replace(/\s+\d.*$/, '');
   const label = book + ' ' + verseRangeLabel(verses, sel);
   const body = [...sel].sort((a, b) => a - b).map(i => verses[i].v + ' ' + verses[i].t).join('\n');
-  const text = label + ' (' + transLabel() + ')\n\n' + body + '\n\n— Family Bible Study';
+  const text = label + ' (' + transLabel() + ')\n\n' + body + '\n\n— Family Scripture';
   if (navigator.share) {
     try { await navigator.share({ text: text, title: label }); return; } catch (e) { if (e.name === 'AbortError') return; }
   }
@@ -1199,7 +1199,7 @@ async function shareVerse() {
   ctx.fillStyle = '#E0A63B'; ctx.font = 'bold 38px Georgia';
   ctx.fillText('— ' + s.ref, 540, Math.min(y + 26, 970));
   ctx.fillStyle = 'rgba(243,241,228,0.6)'; ctx.font = '26px Georgia';
-  ctx.fillText('Family Bible Study', 540, 1032);
+  ctx.fillText('Family Scripture', 540, 1032);
   cv.toBlob(async blob => {
     const file = new File([blob], 'verse.png', { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {

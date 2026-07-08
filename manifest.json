@@ -1,6 +1,6 @@
 {
-  "name": "Family Bible Study",
-  "short_name": "Bible Study",
+  "name": "Family Scripture",
+  "short_name": "Family Scripture",
   "description": "Daily family devotional, kids quiz, and weekly couples study",
   "start_url": ".",
   "display": "standalone",
