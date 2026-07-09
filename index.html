@@ -480,17 +480,36 @@
     font-family: inherit;
     font-size: 1rem;
     text-align: left;
-    padding: 11px 16px;
+    padding: 10px 14px;
     border: 2px solid var(--line);
     border-radius: 14px;
     background: var(--chip);
     color: var(--ink);
     cursor: pointer;
     transition: border-color .15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
+  .opt-letter {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--soft);
+    font-family: 'Mulish', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt-text { flex: 1; }
   .opt:hover { border-color: var(--accent); }
   .opt.correct { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .opt.wrong { background: var(--wrong); border-color: var(--wrong); color: #fff; }
+  .opt.correct .opt-letter, .opt.wrong .opt-letter { background: rgba(255,255,255,0.25); color: #fff; }
   .opt:disabled { cursor: default; opacity: 0.75; }
   .opt.correct:disabled, .opt.wrong:disabled { opacity: 1; }
   .score-banner {
@@ -1366,8 +1385,9 @@ function renderKids() {
         if (oi === q.c) cls += ' correct';
         else if (oi === chosen) cls += ' wrong';
       }
-      const mark = chosen !== undefined ? (oi === q.c ? ' ' + icon('check') : (oi === chosen ? ' ' + icon('x') : '')) : '';
-      html += `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})">${esc(opt)}${mark}</button>`;
+      const mark = chosen !== undefined ? (oi === q.c ? icon('check') : (oi === chosen ? icon('x') : '')) : '';
+      const letter = String.fromCharCode(65 + oi); // A, B, C
+      html += `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})"><span class="opt-letter">${letter}</span><span class="opt-text">${esc(opt)}</span>${mark}</button>`;
     });
     html += `</div>`;
   });
