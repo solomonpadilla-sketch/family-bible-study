@@ -546,27 +546,6 @@
   @keyframes conffall {
     to { transform: translateY(110vh) rotate(540deg); opacity: 0.5; }
   }
-  .progress-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    font-size: 0.75rem;
-    color: var(--soft);
-  }
-  .progress-row .progress-label { min-width: 150px; }
-  .progress-row .bar {
-    flex: 1;
-    height: 8px;
-    border-radius: 100px;
-    background: var(--track);
-    overflow: hidden;
-  }
-  .progress-row .fill {
-    height: 100%;
-    border-radius: 100px;
-    background: linear-gradient(90deg, var(--accent), var(--amber));
-  }
   .toolrow { display: flex; gap: 8px; align-items: center; }
   .mem-words { margin: 12px 0 4px; line-height: 2.2; }
   .mem-chip {
@@ -624,7 +603,7 @@
   .pray-del:hover { color: var(--wrong); }
   @media print {
     .tabs, .stepper, .theme-toggle, .footer-row, .readbtn, .note, header .sub,
-    .pray-add, .pray-actions, .mem-controls, .progress-row, .retry-btn { display: none !important; }
+    .pray-add, .pray-actions, .mem-controls, .retry-btn { display: none !important; }
     .pray-item, .pray-meta, .mem-chip { color: #111 !important; background: none; }
     body { background: #fff !important; color: #111; }
     header h1, .card h2, .quiz-q { color: #111; }
@@ -743,42 +722,6 @@ function applySettings() {
   document.documentElement.style.fontSize = FONT_SIZES[SETTINGS.fontSize] || '16px';
 }
 
-// Kid-safe Bible story rotation for little ones (replaces Proverbs-by-date,
-// which includes chapters that aren't appropriate for young children)
-const KIDSAFE = [
-{t:"God Makes the World",ref:"Genesis 1:1-10"},
-{t:"God Makes the Animals",ref:"Genesis 1:20-25"},
-{t:"Noah Builds the Ark",ref:"Genesis 6:14-22"},
-{t:"The Dove and the Olive Leaf",ref:"Genesis 8:6-12"},
-{t:"God's Rainbow Promise",ref:"Genesis 9:12-16"},
-{t:"Baby Moses in the Basket",ref:"Exodus 2:1-10"},
-{t:"God Parts the Sea",ref:"Exodus 14:21-22"},
-{t:"Bread from Heaven",ref:"Exodus 16:11-18"},
-{t:"The Walls of Jericho Fall",ref:"Joshua 6:15-20"},
-{t:"Samuel Hears God's Voice",ref:"1 Samuel 3:1-10"},
-{t:"David and the Giant",ref:"1 Samuel 17:45-50"},
-{t:"The Jar That Never Ran Out",ref:"1 Kings 17:8-16"},
-{t:"Naaman Washes in the River",ref:"2 Kings 5:9-14"},
-{t:"Daniel and His Vegetables",ref:"Daniel 1:8-15"},
-{t:"Safe in the Fiery Furnace",ref:"Daniel 3:19-27"},
-{t:"Daniel in the Lions' Den",ref:"Daniel 6:16-23"},
-{t:"Jonah and the Big Fish",ref:"Jonah 1:15-17"},
-{t:"The Lord Is My Shepherd",ref:"Psalms 23"},
-{t:"Shout for Joy!",ref:"Psalms 100"},
-{t:"God Watches Over You",ref:"Psalms 121"},
-{t:"Wonderfully Made",ref:"Psalms 139:13-14"},
-{t:"The Wise Men Visit Jesus",ref:"Matthew 2:1-11"},
-{t:"The First Christmas Night",ref:"Luke 2:4-14"},
-{t:"Jesus Feeds Five Thousand",ref:"Matthew 14:13-21"},
-{t:"Jesus Loves the Children",ref:"Matthew 19:13-15"},
-{t:"Jesus Calms the Storm",ref:"Mark 4:35-41"},
-{t:"Jesus Heals a Blind Man",ref:"Mark 10:46-52"},
-{t:"The Lost Sheep",ref:"Luke 15:3-7"},
-{t:"The Good Samaritan",ref:"Luke 10:30-37"},
-{t:"Zacchaeus Climbs a Tree",ref:"Luke 19:1-10"},
-{t:"The Empty Tomb",ref:"Matthew 28:1-8"},
-{t:"Breakfast on the Beach",ref:"John 21:4-13"}
-];
 
 // ---------- Date helpers ----------
 const MS_DAY = 86400000;
@@ -805,30 +748,6 @@ function weekNum(d) {
 const fmtLong = new Intl.DateTimeFormat('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 const fmtShort = new Intl.DateTimeFormat('en-US', { month:'short', day:'numeric' });
 
-// ---------- Reading plan ----------
-const NT_BOOKS = [["Matthew",28],["Mark",16],["Luke",24],["John",21],["Acts",28],["Romans",16],
-  ["1 Corinthians",16],["2 Corinthians",13],["Galatians",6],["Ephesians",6],["Philippians",4],
-  ["Colossians",4],["1 Thessalonians",5],["2 Thessalonians",3],["1 Timothy",6],["2 Timothy",4],
-  ["Titus",3],["Philemon",1],["Hebrews",13],["James",5],["1 Peter",5],["2 Peter",3],
-  ["1 John",5],["2 John",1],["3 John",1],["Jude",1],["Revelation",22]];
-const NT_TOTAL = NT_BOOKS.reduce((s,b)=>s+b[1],0); // 260
-
-function ntChapter(idx) {
-  let i = ((idx % NT_TOTAL) + NT_TOTAL) % NT_TOTAL;
-  for (const [book, ch] of NT_BOOKS) {
-    if (i < ch) return book + ' ' + (i + 1);
-    i -= ch;
-  }
-}
-function readingsFor(d) {
-  const doy = dayOfYear(d);
-  const daysSinceEpoch = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(1970,0,1)) / MS_DAY);
-  return {
-    nt: ntChapter(daysSinceEpoch),
-    psalm: 'Psalms ' + (((doy - 1) % 150) + 1),
-    proverbs: 'Proverbs ' + Math.min(d.getDate(), 31)
-  };
-}
 
 // ---------- Storage ----------
 function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
@@ -1421,16 +1340,12 @@ function renderDaily() {
   const sp = specialFor(d);
   const s = sp || DAILY[idx];
   window._currentDaily = s;
-  const r = readingsFor(d);
   const done = isDone('daily', key);
   const streak = dailyStreak();
-  const daysSinceEpoch = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(1970,0,1)) / MS_DAY);
-  const ntPct = Math.round(((daysSinceEpoch % NT_TOTAL) + NT_TOTAL) % NT_TOTAL / NT_TOTAL * 100);
-  const psPct = Math.round(((dayOfYear(d) - 1) % 150) / 150 * 100);
   const hasAges = SETTINGS.ages.length > 0;
   const showLittle = !hasAges || SETTINGS.ages.some(a => a <= 8);
   const showBig = !hasAges || SETTINGS.ages.some(a => a >= 9 && a <= 12);
-  const kid = KIDSAFE[(dayOfYear(d) - 1) % KIDSAFE.length];
+  const rd = s.read;
 
   document.getElementById('daily-card').innerHTML = `
     <div class="theme-label">${sp ? icon('sparkle') + ' ' + esc(sp.label) : "Today's Theme"}</div>
@@ -1443,17 +1358,12 @@ function renderDaily() {
     <h3 class="section">Talk About It Together</h3>
     <ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
     <h3 class="section">Today's Readings</h3>
-    <p class="readings-note">${SETTINGS.ages.length
-      ? 'Matched to your kids’ ages (' + SETTINGS.ages.join(', ') + ') — change them in Settings.'
-      : 'One reading per age — set your kids’ ages in Settings to tailor these.'}</p>
+    <p class="readings-note">All three go with today's theme &mdash; ${esc(s.t)}.${SETTINGS.ages.length ? ' Matched to your kids’ ages (' + SETTINGS.ages.join(', ') + ').' : ' Set your kids’ ages in Settings to tailor these.'}</p>
     <ul class="readings">
-      ${showLittle ? `<li><span><b>${esc(kid.ref)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8) &middot; ${esc(kid.t)}</span></span> ${passageToggle(kid.ref)}</li>` : ''}
-      ${showBig ? `<li><span><b>${esc(r.psalm)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(r.psalm)}</li>` : ''}
-      <li><span><b>${esc(r.nt)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(r.nt)}</li>
-      <li><span><b>${esc(r.proverbs)}</b> <span class="what">&mdash; ${icon('tree')} Proverb of the day (teens &amp; adults)</span></span> ${passageToggle(r.proverbs)}</li>
+      ${showLittle ? `<li><span><b>${esc(rd.little.ref)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8) &middot; ${esc(rd.little.t)}</span></span> ${passageToggle(rd.little.ref)}</li>` : ''}
+      ${showBig ? `<li><span><b>${esc(rd.big.ref)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(rd.big.ref)}</li>` : ''}
+      <li><span><b>${esc(rd.teen.ref)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(rd.teen.ref)}</li>
     </ul>
-    <div class="progress-row"><span class="progress-label">New Testament journey</span><div class="bar"><div class="fill" style="width:${ntPct}%"></div></div><span class="progress-pct">${ntPct}%</span></div>
-    <div class="progress-row"><span class="progress-label">Psalms journey</span><div class="bar"><div class="fill" style="width:${psPct}%"></div></div><span class="progress-pct">${psPct}%</span></div>
     <h3 class="section">Morning Prayer</h3>
     <p class="prayer">${esc(s.prayer)}</p>
     <div class="footer-row">
