@@ -639,7 +639,7 @@
     <div class="hdr-div"></div>
     <div class="hdr-bottom">
       <div class="tabs">
-    <button id="tab-daily" class="active" onclick="showTab('daily')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M1 12h3M20 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/></svg> Morning Study</button>
+    <button id="tab-daily" class="active" onclick="showTab('daily')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Family Study</button>
     <button id="tab-prayers" onclick="showTab('prayers')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.4C12 3.5 11.2 2.8 10.2 2.9c-.8.1-1.5.6-1.7 1.4L6.8 11.5c-.2.8-.5 1.4-1.1 1.9L4 15.1"/><path d="M12 4.4c0-.9.8-1.6 1.8-1.5.8.1 1.5.6 1.7 1.4l1.7 7.2c.2.8.5 1.4 1.1 1.9l1.7 1.7"/><path d="M12 4.4V12"/><path d="M12 12l-3.4 3.4M12 12l3.4 3.4"/><rect x="2.3" y="15.6" width="7" height="3.4" rx="1.2" transform="rotate(45 5.8 17.3)"/><rect x="14.7" y="15.6" width="7" height="3.4" rx="1.2" transform="rotate(-45 18.2 17.3)"/></svg> Prayers</button>
     <button id="tab-weekly" onclick="showTab('weekly')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Couples Study</button>
       </div>
@@ -1029,7 +1029,7 @@ function showTab(which) {
   renderStepper();
 }
 
-// Header date stepper — steps days on Morning Study, weeks on Couples Study
+// Header date stepper — steps days on Family Study, weeks on Couples Study
 function renderStepper() {
   const el = document.getElementById('hdr-date');
   const wrap = document.getElementById('stepper');
@@ -1099,7 +1099,7 @@ async function listenDaily() {
   try { verse = await fetchPassage(s.ref); } catch (e) {}
   const text = [s.t + '.', verse, s.body, 'Questions to talk about.',
     ...s.q.map((q, i) => 'Question ' + (i + 1) + '. ' + q),
-    'Morning prayer. ' + s.prayer].join('\n');
+    'Prayer. ' + s.prayer].join('\n');
   const u = new SpeechSynthesisUtterance(text);
   u.rate = 0.95;
   speechSynthesis.speak(u);
@@ -1364,7 +1364,7 @@ function renderDaily() {
       ${showBig ? `<li><span><b>${esc(rd.big.ref)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(rd.big.ref)}</li>` : ''}
       <li><span><b>${esc(rd.teen.ref)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(rd.teen.ref)}</li>
     </ul>
-    <h3 class="section">Morning Prayer</h3>
+    <h3 class="section">Prayer</h3>
     <p class="prayer">${esc(s.prayer)}</p>
     <div class="footer-row">
       <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('daily','${key}')">
