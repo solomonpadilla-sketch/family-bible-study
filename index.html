@@ -637,7 +637,9 @@
   .readings.bible li.bible-row { flex-direction: column; align-items: stretch; gap: 8px; padding: 14px 0; }
   .bible-open .what { display: block; font-size: 0.8rem; color: var(--soft); margin-bottom: 4px; }
   .bible-open b { font-size: 1.15rem; color: var(--heading); font-family: 'Newsreader', serif; font-weight: 600; }
-  .bible-alt { display: flex; }
+  .bible-alt { display: block; }
+  .bible-alt .readbtn { display: inline-block; }
+  .bible-alt .passage-text { margin-top: 10px; }
   .questions.big li { font-size: 1.12rem; margin-bottom: 16px; line-height: 1.5; }
   .prayer-box { background: var(--accent); color: var(--accent-ink); border-radius: 18px; padding: 20px 22px; margin: 14px 0; }
   .prayer-box .prayer { color: var(--accent-ink); font-family: 'Newsreader', serif; font-size: 1.15rem; font-style: italic; }
@@ -1604,9 +1606,8 @@ function renderStudy() {
     ${body}${nav}`;
 
   if (step.key === 'gather') verseSlot('daily-verse', s.ref);
-  // memory verse appears as a bonus only after the study is finished
-  const mem = document.getElementById('memory-card');
-  mem.style.display = (studyStep === LAST_STEP && done) ? '' : 'none';
+  // Memory Verse of the Week is always available below the study
+  document.getElementById('memory-card').style.display = '';
 }
 
 function bibleRow(ic, label, ref, story) {
