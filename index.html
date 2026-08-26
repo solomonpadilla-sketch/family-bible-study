@@ -605,9 +605,52 @@
     padding: 4px 8px;
   }
   .pray-del:hover { color: var(--wrong); }
+  /* Guided study steps */
+  .study-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .study-dots { display: flex; gap: 8px; }
+  .study-dots .dot {
+    width: 22px; height: 8px; border-radius: 100px; border: none; padding: 0; cursor: pointer;
+    background: var(--track); transition: background .15s;
+  }
+  .study-dots .dot.past { background: var(--accent); opacity: 0.55; }
+  .study-dots .dot.on { background: var(--accent); width: 32px; }
+  .study-eyebrow { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--soft); flex: none; }
+  .study-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
+  .nav-btn {
+    font-family: 'Mulish', sans-serif; font-weight: 700; font-size: 0.95rem;
+    padding: 11px 22px; border-radius: 100px; cursor: pointer; transition: all .15s;
+  }
+  .nav-btn.back { background: transparent; border: 1.5px solid var(--line); color: var(--ink); }
+  .nav-btn.back:hover { background: var(--chip); }
+  .nav-btn.next { background: var(--accent); border: 1.5px solid var(--accent); color: var(--accent-ink); margin-left: auto; }
+  .leader-note {
+    margin: 8px 0 4px; border: 1px solid var(--line); border-radius: 14px; padding: 4px 14px; background: var(--chip);
+  }
+  .leader-note summary { cursor: pointer; font-weight: 700; font-size: 0.82rem; color: var(--soft); padding: 8px 0; list-style: none; }
+  .leader-note summary::-webkit-details-marker { display: none; }
+  .leader-note summary::before { content: '▸ '; }
+  .leader-note[open] summary::before { content: '▾ '; }
+  .leader-note .body-text { margin-top: 0; padding-bottom: 10px; }
+  .tool-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .readbtn.ghost { border-color: var(--line); color: var(--soft); }
+  .readbtn.ghost:hover { background: var(--chip); color: var(--ink); border-color: var(--line); }
+  .readings.bible li.bible-row { flex-direction: column; align-items: stretch; gap: 8px; padding: 14px 0; }
+  .bible-open .what { display: block; font-size: 0.8rem; color: var(--soft); margin-bottom: 4px; }
+  .bible-open b { font-size: 1.15rem; color: var(--heading); font-family: 'Newsreader', serif; font-weight: 600; }
+  .bible-alt { display: flex; }
+  .questions.big li { font-size: 1.12rem; margin-bottom: 16px; line-height: 1.5; }
+  .prayer-box { background: var(--accent); color: var(--accent-ink); border-radius: 18px; padding: 20px 22px; margin: 14px 0; }
+  .prayer-box .prayer { color: var(--accent-ink); font-family: 'Newsreader', serif; font-size: 1.15rem; font-style: italic; }
+  .done-banner {
+    margin-top: 16px; padding: 12px 16px; border-radius: 14px; text-align: center;
+    background: var(--sel); border: 1px solid var(--accent); font-weight: 700; color: var(--ink);
+  }
   @media print {
     .tabs, .stepper, .theme-toggle, .footer-row, .readbtn, .note, header .sub,
+    .study-top, .study-nav, .tool-row, .bible-alt, .leader-note summary,
     .pray-add, .pray-actions, .mem-controls, .retry-btn { display: none !important; }
+    .prayer-box { background: #f1ede3 !important; color: #111 !important; }
+    .prayer-box .prayer { color: #111 !important; }
     .pray-item, .pray-meta, .mem-chip { color: #111 !important; background: none; }
     body { background: #fff !important; color: #111; }
     header h1, .card h2, .quiz-q { color: #111; }
@@ -658,7 +701,6 @@
 
   <div id="view-daily">
     <div class="card" id="daily-card"></div>
-    <div class="card" id="kids-card"></div>
     <div class="card" id="memory-card"></div>
   </div>
 
@@ -897,9 +939,9 @@ function verseSlot(id, ref) {
   });
 }
 let passageCounter = 0;
-function passageToggle(ref) {
+function passageToggle(ref, label) {
   const pid = 'passage-' + (passageCounter++);
-  return `<button class="readbtn" onclick="togglePassage('${pid}', '${ref.replace(/'/g,"\\'")}')">Show text</button>
+  return `<button class="readbtn ghost" onclick="togglePassage('${pid}', '${ref.replace(/'/g,"\\'")}')">${label || 'Show text'}</button>
           <div class="passage-text" id="${pid}"></div>`;
 }
 async function fetchVerses(ref) {
@@ -1052,17 +1094,16 @@ function renderStepper() {
 function stepPrev() { currentTab === 'weekly' ? moveWeek(-1) : moveDay(-1); }
 function stepNext() { currentTab === 'weekly' ? moveWeek(1) : moveDay(1); }
 function stepToday() { currentTab === 'weekly' ? goThisWeek() : goToday(); }
-function moveDay(n) { viewDate.setDate(viewDate.getDate() + n); render(); }
-function goToday() { viewDate = new Date(); render(); }
+function moveDay(n) { viewDate.setDate(viewDate.getDate() + n); studyStep = 0; render(); }
+function goToday() { viewDate = new Date(); studyStep = 0; render(); }
 function moveWeek(n) { viewWeekOffset += n; render(); }
 function goThisWeek() { viewWeekOffset = 0; render(); }
 
 function render() {
   passageCounter = 0;
   renderStepper();
-  renderDaily();
+  renderStudy();
   renderMemory();
-  renderKids();
   renderPrayers();
   renderWeekly();
 }
@@ -1278,27 +1319,18 @@ function answerQuiz(qi, oi) {
   if (answers[qi] !== undefined) return; // already answered
   answers[qi] = oi;
   store(kidsKey(viewDate), answers);
-  renderKids();
+  renderStudy();
 }
 function resetQuiz() {
   try { localStorage.removeItem(kidsKey(viewDate)); } catch(e) {}
-  renderKids();
+  renderStudy();
 }
-function renderKids() {
-  const d = viewDate;
-  const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
-  const sp = specialFor(d);
-  const k = sp ? { quiz: sp.quiz, fun: sp.fun } : KIDS[idx % KIDS.length];
-  const answers = load(kidsKey(d)) || {};
+function quizHTML(k) {
+  const answers = load(kidsKey(viewDate)) || {};
   const total = k.quiz.length;
   const answered = Object.keys(answers).length;
   const score = k.quiz.reduce((s, q, i) => s + (answers[i] === q.c ? 1 : 0), 0);
-
-  let html = `
-    <div class="theme-label">${icon('smile')} Kids Quiz</div>
-    <h2>How Well Were You Listening?</h2>
-    <div class="body-text readings-note">Three quick questions about today's study. Tap your answer!</div>`;
-
+  let html = '';
   k.quiz.forEach((q, qi) => {
     const chosen = answers[qi];
     html += `<div class="quiz-q"><span class="qnum">${qi + 1}</span>${esc(q.q)}</div><div class="opts">`;
@@ -1309,40 +1341,52 @@ function renderKids() {
         else if (oi === chosen) cls += ' wrong';
       }
       const mark = chosen !== undefined ? (oi === q.c ? icon('check') : (oi === chosen ? icon('x') : '')) : '';
-      const letter = String.fromCharCode(65 + oi); // A, B, C
+      const letter = String.fromCharCode(65 + oi);
       html += `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="answerQuiz(${qi},${oi})"><span class="opt-letter">${letter}</span><span class="opt-text">${esc(opt)}</span>${mark}</button>`;
     });
     html += `</div>`;
   });
-
   if (answered === total) {
     const stars = Array.from({ length: total }, (_, i) =>
-      icon('star', i < score ? 'color:var(--label);fill:var(--amber)' : 'color:var(--faint)')
-    ).join(' ');
+      icon('star', i < score ? 'color:var(--label);fill:var(--amber)' : 'color:var(--faint)')).join(' ');
     const cheer = score === total ? 'Perfect! You were really listening!' :
                   score >= total - 1 ? 'Great job — so close to perfect!' :
-                  'Good try! Ask the family about the ones you missed.';
-    html += `
-      <div class="score-banner">
-        <div class="stars">${stars}</div>
+                  'Good try! Talk about the ones you missed.';
+    html += `<div class="score-banner"><div class="stars">${stars}</div>
         <div>You got <b>${score} of ${total}</b>! ${cheer}</div>
-        <button class="retry-btn" onclick="resetQuiz()">Try again</button>
-      </div>`;
+        <button class="retry-btn" onclick="resetQuiz()">Try again</button></div>`;
   }
-
-  html += `
-    <h3 class="section">Fun Challenge</h3>
+  html += `<h3 class="section">Fun Challenge</h3>
     <div class="activity">${icon('target', 'color:var(--label)')} ${esc(k.fun)}</div>`;
-
-  document.getElementById('kids-card').innerHTML = html;
+  return html;
 }
 
-function renderDaily() {
+// ---------- Family Study: guided step-through ----------
+let studyStep = 0;
+const STUDY_STEPS = [
+  { key: 'gather', icon: 'star', title: 'Gather' },
+  { key: 'open', icon: 'tree', title: 'Open the Word' },
+  { key: 'talk', icon: 'smile', title: 'Talk About It' },
+  { key: 'quiz', icon: 'target', title: 'Quick Quiz' },
+  { key: 'pray', icon: 'pray', title: 'Pray Together' },
+];
+const LAST_STEP = STUDY_STEPS.length - 1;
+function studyGoto(n) { studyStep = Math.max(0, Math.min(LAST_STEP, n)); renderStudy(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function studyNext() { studyGoto(studyStep + 1); }
+function studyBack() { studyGoto(studyStep - 1); }
+function finishStudy(key) { toggleDone('daily', key); } // toggleDone re-renders + confetti on milestones
+
+function studyData() {
   const d = viewDate;
-  const key = dateKey(d);
   const idx = ((dayOfYear(d) - 1) + d.getFullYear() * 13) % DAILY.length;
   const sp = specialFor(d);
   const s = sp || DAILY[idx];
+  const k = sp ? { quiz: sp.quiz, fun: sp.fun } : KIDS[idx % KIDS.length];
+  return { d, s, sp, k, key: dateKey(d) };
+}
+
+function renderStudy() {
+  const { d, s, sp, k, key } = studyData();
   window._currentDaily = s;
   const done = isDone('daily', key);
   const streak = dailyStreak();
@@ -1350,38 +1394,104 @@ function renderDaily() {
   const showLittle = !hasAges || SETTINGS.ages.some(a => a <= 8);
   const showBig = !hasAges || SETTINGS.ages.some(a => a >= 9 && a <= 12);
   const rd = s.read;
+  const step = STUDY_STEPS[studyStep];
+
+  // progress dots + eyebrow
+  const dots = STUDY_STEPS.map((st, i) =>
+    `<button class="dot ${i === studyStep ? 'on' : ''} ${i < studyStep ? 'past' : ''}" onclick="studyGoto(${i})" aria-label="${st.title}"></button>`).join('');
+  let body = '';
+
+  if (step.key === 'gather') {
+    body = `
+      <div class="theme-label">${sp ? icon('sparkle') + ' ' + esc(sp.label) : "Today's Theme"}</div>
+      <h2>${esc(s.t)}</h2>
+      <div class="verse-box"><span id="daily-verse">Loading verse…</span><span class="ref">&mdash; ${esc(s.ref)} (${transLabel()})</span></div>
+      <p class="readings-note">Get everyone comfortable. When you're ready, tap <b>Next</b> to begin — this guide walks you through the study step by step.</p>
+      <details class="leader-note"><summary>For the leader &mdash; a little background (optional)</summary><div class="body-text">${esc(s.body)}</div></details>
+      <div class="tool-row">
+        <button class="readbtn ghost" onclick="listenDaily()">${icon('volume')} Listen</button>
+        <button class="readbtn ghost" onclick="shareVerse()">${icon('share')} Share verse</button>
+        <button class="readbtn ghost" onclick="printStudy()">${icon('tree')} Print</button>
+      </div>`;
+  } else if (step.key === 'open') {
+    body = `
+      <div class="theme-label">${icon('tree')} Open the Word</div>
+      <h2>Open your Bible</h2>
+      <p class="readings-note">Read today's passage aloud together — it goes with today's theme, <b>${esc(s.t)}</b>.${hasAges ? '' : ' (Set your kids’ ages in Settings to show just the right readings.)'}</p>
+      <ul class="readings bible">
+        ${showLittle ? bibleRow('sprout', 'Little ones (ages 4–8)', rd.little.ref, rd.little.t) : ''}
+        ${showBig ? bibleRow('leaf', 'Big kids (ages 9–12)', rd.big.ref) : ''}
+        ${bibleRow('tree', 'Teens & adults', rd.teen.ref)}
+      </ul>`;
+  } else if (step.key === 'talk') {
+    body = `
+      <div class="theme-label">${icon('smile')} Talk About It</div>
+      <h2>Talk about it together</h2>
+      <p class="readings-note">Ask the kids — go around so everyone gets a turn. There are no wrong answers.</p>
+      <ol class="questions big">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>`;
+  } else if (step.key === 'quiz') {
+    body = `
+      <div class="theme-label">${icon('target', 'color:var(--label)')} Quick Quiz</div>
+      <h2>See what the kids remember</h2>
+      <p class="readings-note">Three quick questions — tap A, B, or C. (Optional fun, then on to prayer.)</p>
+      ${quizHTML(k)}`;
+  } else if (step.key === 'pray') {
+    body = `
+      <div class="theme-label">${icon('pray')} Pray Together</div>
+      <h2>Close in prayer</h2>
+      <p class="readings-note">End your time praying together. Pray this out loud, or let someone pray in their own words.</p>
+      <div class="prayer-box"><p class="prayer">${esc(s.prayer)}</p></div>
+      ${done ? `<div class="done-banner">${icon('check')} Amen. Study complete &mdash; <span class="streak"><span style="color:var(--amber)">${icon('flame')}</span> <b>${streak}</b> day${streak === 1 ? '' : 's'}${streakBadge(streak)}</span></div>` : ''}`;
+  }
+
+  // navigation
+  let nav = '<div class="study-nav">';
+  nav += studyStep > 0 ? `<button class="nav-btn back" onclick="studyBack()">← Back</button>` : '<span></span>';
+  if (studyStep < LAST_STEP) {
+    nav += `<button class="nav-btn next" onclick="studyNext()">Next →</button>`;
+  } else {
+    nav += `<button class="complete-btn ${done ? 'done' : ''}" onclick="finishStudy('${key}')">${done ? icon('check') + ' Amen — Done' : 'Amen 🙏 We’re done'}</button>`;
+  }
+  nav += '</div>';
 
   document.getElementById('daily-card').innerHTML = `
-    <div class="theme-label">${sp ? icon('sparkle') + ' ' + esc(sp.label) : "Today's Theme"}</div>
+    <div class="study-top"><div class="study-dots">${dots}</div>
+      <div class="study-eyebrow">Step ${studyStep + 1} of ${STUDY_STEPS.length}</div></div>
+    ${body}${nav}`;
+
+  if (step.key === 'gather') verseSlot('daily-verse', s.ref);
+  // memory verse appears as a bonus only after the study is finished
+  const mem = document.getElementById('memory-card');
+  mem.style.display = (studyStep === LAST_STEP && done) ? '' : 'none';
+}
+
+function bibleRow(ic, label, ref, story) {
+  return `<li class="bible-row">
+    <div class="bible-open"><span class="what">${icon(ic)} ${label}${story ? ' &middot; ' + esc(story) : ''}</span>
+      <b>Open your Bible to ${esc(ref)}</b></div>
+    <div class="bible-alt">${passageToggle(ref, 'No Bible handy? Show text')}</div>
+  </li>`;
+}
+
+function printStudy() {
+  const { s, sp, rd } = studyData();
+  const readList = [
+    ['Little ones (4–8)', rd.little.ref, rd.little.t],
+    ['Big kids (9–12)', rd.big.ref, ''],
+    ['Teens & adults', rd.teen.ref, ''],
+  ].map(([lbl, ref, st]) => `<li><b>${esc(ref)}</b> — ${lbl}${st ? ' · ' + esc(st) : ''}</li>`).join('');
+  const html = `
+    <div class="theme-label">${sp ? esc(sp.label) : "Today's Theme"}</div>
     <h2>${esc(s.t)}</h2>
-    <div class="verse-box">
-      <span id="daily-verse">Loading verse…</span>
-      <span class="ref">&mdash; ${esc(s.ref)} (${transLabel()})</span>
-    </div>
-    <div class="body-text">${esc(s.body)}</div>
-    <h3 class="section">Talk About It Together</h3>
-    <ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
-    <h3 class="section">Today's Readings</h3>
-    <p class="readings-note">All three go with today's theme &mdash; ${esc(s.t)}.${SETTINGS.ages.length ? ' Matched to your kids’ ages (' + SETTINGS.ages.join(', ') + ').' : ' Set your kids’ ages in Settings to tailor these.'}</p>
-    <ul class="readings">
-      ${showLittle ? `<li><span><b>${esc(rd.little.ref)}</b> <span class="what">&mdash; ${icon('sprout')} Little ones (ages 4&ndash;8) &middot; ${esc(rd.little.t)}</span></span> ${passageToggle(rd.little.ref)}</li>` : ''}
-      ${showBig ? `<li><span><b>${esc(rd.big.ref)}</b> <span class="what">&mdash; ${icon('leaf')} Big kids (ages 9&ndash;12)</span></span> ${passageToggle(rd.big.ref)}</li>` : ''}
-      <li><span><b>${esc(rd.teen.ref)}</b> <span class="what">&mdash; ${icon('tree')} Teens &amp; adults</span></span> ${passageToggle(rd.teen.ref)}</li>
-    </ul>
-    <h3 class="section">Prayer</h3>
-    <p class="prayer">${esc(s.prayer)}</p>
-    <div class="footer-row">
-      <button class="complete-btn ${done ? 'done' : ''}" onclick="toggleDone('daily','${key}')">
-        ${done ? icon('check') + ' Completed' : 'Mark Complete'}
-      </button>
-      <span class="streak"><span style="color:var(--amber)">${icon('flame')}</span> Streak: <b>${streak}</b> day${streak === 1 ? '' : 's'}${streakBadge(streak)}</span>
-      <span class="toolrow">
-        <button class="readbtn" onclick="listenDaily()">${icon('volume')} Listen</button>
-        <button class="readbtn" onclick="shareVerse()">${icon('share')} Share</button>
-        <button class="printbtn" onclick="window.print()">Print</button>
-      </span>
-    </div>`;
-  verseSlot('daily-verse', s.ref);
+    <div class="verse-box"><span>${esc(s.ref)} (${transLabel()})</span></div>
+    <h3 class="section">Open the Word</h3><ul class="readings">${readList}</ul>
+    <h3 class="section">Talk About It</h3><ol class="questions">${s.q.map(q => '<li>' + esc(q) + '</li>').join('')}</ol>
+    <h3 class="section">Prayer</h3><p class="prayer">${esc(s.prayer)}</p>`;
+  const card = document.getElementById('daily-card');
+  const saved = card.innerHTML;
+  card.innerHTML = html;
+  window.print();
+  setTimeout(() => { card.innerHTML = saved; renderStudy(); }, 300);
 }
 
 function renderWeekly() {
