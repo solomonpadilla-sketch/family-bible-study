@@ -665,6 +665,48 @@
     .card { padding: 20px 16px; }
     header h1 { font-size: 1.4rem; }
   }
+
+  /* Kid-friendly memory-verse print sheet */
+  .ms-overlay {
+    position: fixed; inset: 0; z-index: 3000; display: none;
+    flex-direction: column; align-items: center; gap: 14px;
+    background: #e7e8e3; overflow: auto; padding: 16px;
+  }
+  .ms-toolbar { display: flex; gap: 10px; position: sticky; top: 0; }
+  .ms-page {
+    width: 100%; max-width: 760px; background: #fff; color: #26302a;
+    border: 3px solid #3B5D46; border-radius: 22px; padding: 30px 34px 22px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.25); font-family: 'Mulish', sans-serif;
+  }
+  .ms-head { display: flex; align-items: center; gap: 14px; border-bottom: 2px dashed #CBD3C0; padding-bottom: 14px; margin-bottom: 16px; }
+  .ms-crown { flex: none; width: 54px; height: 54px; border-radius: 14px; background: #eef0e6; display: flex; align-items: center; justify-content: center; }
+  .ms-kicker { font-size: .8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #b8934a; }
+  .ms-title { font-family: 'Newsreader', serif; font-size: 1.9rem; font-weight: 600; color: #2c422c; line-height: 1.1; }
+  .ms-verse {
+    font-family: 'Newsreader', serif; font-size: 1.5rem; line-height: 1.5; font-style: italic;
+    text-align: center; color: #26302a; background: #f4f6ee; border-radius: 16px; padding: 20px 22px; margin: 8px 0;
+  }
+  .ms-verse.ms-loading { font-size: 1.05rem; font-style: normal; color: #555; }
+  .ms-ref { text-align: center; font-weight: 800; color: #b8934a; margin-bottom: 6px; }
+  .ms-sec { margin-top: 20px; }
+  .ms-label { font-weight: 800; font-size: 1rem; color: #3B5D46; margin-bottom: 8px; }
+  .ms-trace { font-family: 'Newsreader', serif; font-size: 1.6rem; line-height: 1.7; font-style: italic; color: #c4c9bf; }
+  .ms-blanks { font-size: 1.15rem; line-height: 2; }
+  .ms-blanks .blank { border-bottom: 2px solid #3B5D46; display: inline-block; min-width: 70px; }
+  .ms-bank { margin-top: 10px; font-size: .95rem; background: #f4f6ee; border-radius: 10px; padding: 8px 12px; }
+  .ms-line { border-bottom: 2px solid #cbd3c0; height: 34px; }
+  .ms-draw { border: 2px dashed #b8934a; border-radius: 14px; height: 190px; }
+  .ms-week { display: flex; gap: 8px; justify-content: space-between; }
+  .ms-day { flex: 1; text-align: center; border: 1.5px solid #cbd3c0; border-radius: 12px; padding: 8px 0; }
+  .ms-star svg { display: block; margin: 0 auto; }
+  .ms-dl { font-weight: 800; color: #6b7566; margin-top: 4px; font-size: .85rem; }
+  .ms-foot { text-align: center; margin-top: 18px; padding-top: 12px; border-top: 2px dashed #CBD3C0; font-size: .8rem; color: #9aa295; }
+  @media print {
+    body.ms-printing > *:not(#memory-sheet) { display: none !important; }
+    body.ms-printing #memory-sheet { position: static; display: block !important; background: #fff; padding: 0; overflow: visible; }
+    #memory-sheet .no-print { display: none !important; }
+    #memory-sheet .ms-page { box-shadow: none; margin: 0; max-width: 100%; border-width: 2px; }
+  }
 </style>
 </head>
 <body>
@@ -1232,6 +1274,7 @@ function renderMemory() {
     <div class="verse-box" style="padding:10px 16px"><span class="ref" style="margin-top:0">— ${esc(mv.ref)} (${transLabel()})</span></div>
     <div class="mem-controls">
       <button class="readbtn" onclick="memLevel()">${memState.level === 3 ? 'Show it again' : 'Hide ' + (memState.level === 0 ? 'some' : 'more') + ' words'}</button>
+      <button class="readbtn ghost" onclick="printMemorySheet()">${icon('tree')} Print kids' sheet</button>
       ${memorized ? '' : '<button class="complete-btn" onclick="memGotIt()">I can say it! ' + icon('star', 'fill:currentColor') + '</button>'}
     </div>`;
   window._memRef = SETTINGS.translation + '|' + mv.ref;
@@ -1251,6 +1294,107 @@ function renderMemory() {
     if (box) box.textContent = 'Open your Bible to ' + mv.ref + ' — then come practice here when you\'re back online.';
   });
 }
+
+// ---------- Kid-friendly memory-verse print sheet ----------
+function printMemorySheet() {
+  const wn = weekNum(viewDate);
+  const mv = MEMORY[((wn % MEMORY.length) + MEMORY.length) % MEMORY.length];
+  const mon = mondayOf(viewDate);
+  const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+  const weekStr = fmtShort.format(mon) + ' – ' + fmtShort.format(sun);
+  buildMemorySheet(mv, weekStr, null); // show immediately with a loading verse
+  fetchPassage(mv.ref)
+    .then(t => buildMemorySheet(mv, weekStr, t.replace(/\s+/g, ' ').trim()))
+    .catch(() => buildMemorySheet(mv, weekStr, ''));
+}
+
+function buildMemorySheet(mv, weekStr, verseText) {
+  const trans = transLabel();
+  // Fill-in-the-blank: hide a few longer words, list them in a shuffled word bank
+  let blanksHTML = '', bank = [];
+  if (verseText) {
+    const words = verseText.split(' ');
+    const eligible = [];
+    words.forEach((w, i) => { if (w.replace(/[^A-Za-z]/g, '').length >= 4 && i > 0) eligible.push(i); });
+    const pickCount = Math.min(4, Math.max(2, Math.round(eligible.length / 6)));
+    const chosen = new Set();
+    for (let n = 0; n < pickCount && eligible.length; n++) {
+      const step = Math.floor(eligible.length / pickCount);
+      chosen.add(eligible[Math.min(eligible.length - 1, n * step + Math.floor(step / 2))]);
+    }
+    blanksHTML = words.map((w, i) => {
+      if (chosen.has(i)) {
+        const bare = w.replace(/[^A-Za-z]/g, '');
+        const punct = w.slice(bare.length ? w.indexOf(bare) + bare.length : w.length);
+        bank.push(bare);
+        return '<span class="blank">' + '&nbsp;'.repeat(Math.max(bare.length, 5)) + '</span>' + esc(punct);
+      }
+      return esc(w);
+    }).join(' ');
+    bank.sort(() => Math.random() - 0.5);
+  }
+
+  const verseBox = verseText
+    ? '<div class="ms-verse">&ldquo;' + esc(verseText) + '&rdquo;</div>'
+    : '<div class="ms-verse ms-loading">Open your Bible to ' + esc(mv.ref) + ' and write the verse here:<br><br>______________________________<br><br>______________________________</div>';
+
+  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const star = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#b8934a" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+  const sheet = `
+    <div class="ms-toolbar no-print">
+      <button class="nav-btn next" onclick="printSheet()">${icon('tree')} Print</button>
+      <button class="nav-btn back" onclick="closeMemorySheet()">Close</button>
+    </div>
+    <div class="ms-page">
+      <div class="ms-head">
+        <div class="ms-crown">${star}</div>
+        <div>
+          <div class="ms-kicker">My Memory Verse &middot; Week of ${esc(weekStr)}</div>
+          <div class="ms-title">${esc(mv.t)}</div>
+        </div>
+      </div>
+      ${verseBox}
+      <div class="ms-ref">&mdash; ${esc(mv.ref)} (${trans})</div>
+
+      ${verseText ? `<div class="ms-sec"><div class="ms-label">Trace it</div><div class="ms-trace">&ldquo;${esc(verseText)}&rdquo;</div></div>` : ''}
+
+      ${blanksHTML ? `<div class="ms-sec"><div class="ms-label">Fill in the blanks</div>
+        <div class="ms-blanks">&ldquo;${blanksHTML}&rdquo;</div>
+        <div class="ms-bank"><b>Word bank:</b> ${bank.map(esc).join(' &nbsp;&middot;&nbsp; ')}</div></div>` : ''}
+
+      <div class="ms-sec"><div class="ms-label">Now write it yourself</div>
+        <div class="ms-line"></div><div class="ms-line"></div><div class="ms-line"></div></div>
+
+      <div class="ms-sec"><div class="ms-label">Draw what this verse means to you</div>
+        <div class="ms-draw"></div></div>
+
+      <div class="ms-sec"><div class="ms-label">Color a star each day you practice</div>
+        <div class="ms-week">${days.map((d, i) => `<div class="ms-day"><div class="ms-star">${star}</div><div class="ms-dl">${d}</div></div>`).join('')}</div></div>
+
+      <div class="ms-foot">Family Scripture &middot; familyscripture.com</div>
+    </div>`;
+
+  let ov = document.getElementById('memory-sheet');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'memory-sheet';
+    ov.className = 'ms-overlay';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = sheet;
+  ov.style.display = 'flex';
+}
+function closeMemorySheet() {
+  const ov = document.getElementById('memory-sheet');
+  if (ov) ov.style.display = 'none';
+}
+function printSheet() {
+  document.body.classList.add('ms-printing');
+  window.print();
+  setTimeout(() => document.body.classList.remove('ms-printing'), 500);
+}
+window.addEventListener('afterprint', () => document.body.classList.remove('ms-printing'));
 
 // ---------- Prayers of the week ----------
 function weeksSince(iso) {
